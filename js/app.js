@@ -41,7 +41,6 @@ app.pubsub = (function () {
 /********app data****************************************************************************************************************************/
 
 app.data = (function () {
-    //private variables
     var items = [
         {
             "id": 1,
@@ -283,7 +282,6 @@ app.data = (function () {
         console.log('could not find item');
     };
     return {
-        //shared methods
         getItems: getItems,
         getItemsLength: getItemsLength,
         getItemById: getItemById
@@ -310,7 +308,10 @@ app.mainTable = (function () {
     };
 
     var subscriptions = {
-        changePage: app.pubsub.subscribe('changePage', initializeItems),
+        changePage: app.pubsub.subscribe('changePage', function (pageNumber) {
+            var itemsPerPage = app.pagination.getItemsPerPage();
+            initializeItems(pageNumber * itemsPerPage - itemsPerPage, pageNumber * itemsPerPage);
+        }),
         changeItemsPerPage: app.pubsub.subscribe('changedItemsPerPage', function (itemsPerPage) {
             var currentPage = app.pagination.getCurrentPage();
             var firstItemIndex = itemsPerPage * currentPage - itemsPerPage;
@@ -329,14 +330,11 @@ app.mainTable = (function () {
 /********pagination****************************************************************************************************************************/
 
 app.pagination = (function () {
-    var currentPage = 1,
-        itemsPerPage = 5,
-        numberOfPages = Math.ceil(app.data.getItemsLength() / itemsPerPage);
+    var currentPage = 1, itemsPerPage, numberOfPages;
     var goToPage = function (pageNumber) {
         pageNumber = (pageNumber <= numberOfPages) ? pageNumber : numberOfPages;
         currentPage = pageNumber;
-        //TODO consider changing the parameters here, and adding a respondToPageChange func to mainTable
-        app.pubsub.publish('changePage', currentPage * itemsPerPage - itemsPerPage, currentPage * itemsPerPage);
+        app.pubsub.publish('changePage', pageNumber);
     };
     var getNumberOfPages = function () {
         return numberOfPages;
@@ -349,16 +347,8 @@ app.pagination = (function () {
     };
     var setItemsPerPage = function (numberOfItems) {
         itemsPerPage = numberOfItems;
+        numberOfPages = Math.ceil(app.data.getItemsLength() / itemsPerPage)
         app.pubsub.publish('changedItemsPerPage', numberOfItems);
-    };
-
-    var updateNumberOfPages = function () {
-        //TODO: refactor, DRY
-        numberOfPages = Math.ceil(app.data.getItemsLength() / itemsPerPage);
-    };
-
-    var subscriptions = {
-        updateNumberOfPages: app.pubsub.subscribe('changedItemsPerPage', updateNumberOfPages)
     };
 
     return {
@@ -375,7 +365,6 @@ app.pagination = (function () {
 app.cart = (function () {
     var items = [],
         fields = ['name', 'amount', 'price'];
-
     var itemIndexInCart = function (item) {
         for (var i = 0; i < items.length; i += 1) {
             if (items[i].id === item.id) {
@@ -419,7 +408,6 @@ app.cart = (function () {
     var getTotal = function () {
         return total;
     };
-
     var getItems = function () {
         return items;
     };
@@ -507,7 +495,6 @@ app.draw = (function (app) {
             };
         }
     }();
-
     var mainTable = (function () {
         var mainTableHeading = document.querySelector('div.mainTable > div.Heading'),
             mainTableBody = document.querySelector('div.mainTable > div.table-body'),
@@ -515,7 +502,6 @@ app.draw = (function (app) {
             headingFields = app.mainTable.getDataFields();
 
         var headingRow = helpers.createHeadingRow(headingFields);
-
         mainTableHeading.appendChild(headingRow);//happens only once!
 
 
@@ -551,7 +537,6 @@ app.draw = (function (app) {
             cell.appendChild(button);
             return cell;
         };
-
         var subscriptions = {
             updateTable: app.pubsub.subscribe('initializedItems', updateBody)
 
@@ -561,57 +546,50 @@ app.draw = (function (app) {
             update: updateBody
         }
 
-
     })();
-
     var pagination = (function () {
-        var lastPage = app.pagination.getNumberOfPages(),
-            pagesListContainer = document.querySelector('nav > ul.page-list');
+        var pagesListContainer = document.querySelector('nav > ul.page-list');
 
         var createPagesList = function () {
+            lastPage = app.pagination.getNumberOfPages();
             var fragment = document.createDocumentFragment();
             for (var i = 1; i <= lastPage; i += 1) {
-                var li = helpers.createNewElement('li', {class: 'page-number'});
-                li.dataset.number = i;
-                li.textContent = i.toString();
-                li.onclick = function () {
-                    //TODO: maybe move this to pubsub
-                    app.pagination.goToPage(this.dataset.number);
-                };
+                var li = createPage(i);
                 fragment.appendChild(li);
             }
             return fragment;
         };
-        var addCurrentPageClass = function () {
+        var createPage = function (pageNumber) {
+            var li = helpers.createNewElement('li', {class: 'page-number', 'data-number': pageNumber});
+            li.textContent = pageNumber.toString();
+            li.onclick = function () {
+                //TODO: maybe move this to pubsub
+                app.pagination.goToPage(this.dataset.number);
+            };
+            return li;
+        };
+
+        var handleCurrentPageClass = function () {
             var currentPage = app.pagination.getCurrentPage(),
-                currentPageLi = document.querySelector('li.page-number:nth-child(' + currentPage + ')');
-            currentPageLi.classList.add('current-page');
+                oldCurrentPageLi = document.querySelector('li.page-number.current-page'),
+                newCurrentPageLi = document.querySelector('li.page-number:nth-child(' + currentPage + ')');
+            if (oldCurrentPageLi) {
+                oldCurrentPageLi.classList.remove('current-page');
+            }
+            newCurrentPageLi.classList.add('current-page');
         };
         var updatePagesList = function () {
             var pagesList = createPagesList();
             pagesListContainer.innerHTML = "";
             pagesListContainer.appendChild(pagesList);
-            addCurrentPageClass();
-        };
-        var updatePageCount = function () {//TODO: move to init function or something alike
-            lastPage = app.pagination.getNumberOfPages();
+            handleCurrentPageClass();
         };
 
         var subscriptions = {
-            updatePagesListOnChangePage: app.pubsub.subscribe('changePage', updatePagesList),
-            updatePagesListOnItemCountChange: app.pubsub.subscribe('changedItemsPerPage', function (itemsPerPage) {
-                updatePageCount();
-                updatePagesList();
-            })
+            updatePageClasses: app.pubsub.subscribe('changePage', handleCurrentPageClass),
+            updatePagesListOnItemCountChange: app.pubsub.subscribe('changedItemsPerPage', updatePagesList)
         };
-
-
-        return {
-            updatePagesList: updatePagesList
-        };
-
     })();
-
     /* Item Per Page Input
      *  TODO: disallow to choose 0
      * */
@@ -619,9 +597,9 @@ app.draw = (function (app) {
         var input = document.querySelector('input#items-per-page-input');
         input.onchange = function () {
             app.pagination.setItemsPerPage(input.value);
-        }
-    })();
+        };
 
+    })();
     var cart = (function () {
         var cartHeading = document.querySelector('div.cart > div.Heading'),
             cartBody = document.querySelector('div.cart > div.table-body'),
@@ -639,23 +617,26 @@ app.draw = (function (app) {
             cartBody.appendChild(body);
         };
 
-        var updateTotal = function() {
+        var updateTotal = function () {
             var total = app.cart.getTotal();
             totalAmount.textContent = total.amount.toString();
             totalPrice.textContent = total.price.toString();
         };
 
         var subscriptions = {
-            'updateCart' : app.pubsub.subscribe('itemAddedToCart', function(){
+            'updateCart': app.pubsub.subscribe('itemAddedToCart', function () {
                 updateBody();
                 updateTotal()
             })
         }
 
     })();
-
-    return {
-        mainTable: mainTable.update,
-        pagination: pagination.updatePagesList
-    };
 })(app);
+
+
+/********initialize app with 2 items per page****************************************************************************************************************************/
+(function init() {
+    app.pagination.setItemsPerPage(2);
+    app.pagination.goToPage(1);
+})();
+
