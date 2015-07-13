@@ -281,6 +281,17 @@ app.data = (function () {
         }
         console.log('could not find item');
     };
+
+    //TODO: new types of items
+    //(function () {
+    //    for (var i = 0; i < items.length; i += 1) {
+    //        if (i % 5 === 0) {
+    //            items[i] = Object.create(items[i]);
+    //            items[i].type = 'super-dooper';
+    //        }
+    //    }
+    //})();
+
     return {
         getItems: getItems,
         getItemsLength: getItemsLength,
@@ -294,11 +305,11 @@ app.mainTable = (function () {
     var items = [];
     var data = app.data.getItems();
     var dataFields = Object.keys(data[0]);
-    var initializeItems = function (firstItemIndex, stopIndex) {
+    var generateItems = function (firstItemIndex, stopIndex) {
         var dataLength = app.data.getItemsLength();
         stopIndex = (stopIndex < dataLength) ? stopIndex : dataLength;
         items = data.slice(firstItemIndex, stopIndex);
-        app.pubsub.publish('initializedItems');
+        app.pubsub.publish('itemsGenerated');
     };
     var getItems = function () {
         return items;
@@ -307,21 +318,21 @@ app.mainTable = (function () {
         return dataFields;
     };
 
-    var subscriptions = {
-        changePage: app.pubsub.subscribe('changePage', function (pageNumber) {
+    var subscriptions = {//TODO: create dictionary of constants > events
+        changePage: app.pubsub.subscribe('pageChanged', function (pageNumber) {
             var itemsPerPage = app.pagination.getItemsPerPage();
-            initializeItems(pageNumber * itemsPerPage - itemsPerPage, pageNumber * itemsPerPage);
+            generateItems(pageNumber * itemsPerPage - itemsPerPage, pageNumber * itemsPerPage);
         }),
-        changeItemsPerPage: app.pubsub.subscribe('changedItemsPerPage', function (itemsPerPage) {
+        changeItemsPerPage: app.pubsub.subscribe('itemsPerPageChanged', function (itemsPerPage) {
             var currentPage = app.pagination.getCurrentPage();
             var firstItemIndex = itemsPerPage * currentPage - itemsPerPage;
             var stopIndex = itemsPerPage * currentPage;
-            initializeItems(firstItemIndex, stopIndex);
+            generateItems(firstItemIndex, stopIndex);
         })
     };
 
     return {
-        initializeItems: initializeItems,
+        generateItems: generateItems,
         getItems: getItems,
         getDataFields: getDataFields
     };
@@ -334,7 +345,7 @@ app.pagination = (function () {
     var goToPage = function (pageNumber) {
         pageNumber = (pageNumber <= numberOfPages) ? pageNumber : numberOfPages;
         currentPage = pageNumber;
-        app.pubsub.publish('changePage', pageNumber);
+        app.pubsub.publish('pageChanged', pageNumber);
     };
     var getNumberOfPages = function () {
         return numberOfPages;
@@ -348,7 +359,7 @@ app.pagination = (function () {
     var setItemsPerPage = function (numberOfItems) {
         itemsPerPage = numberOfItems;
         numberOfPages = Math.ceil(app.data.getItemsLength() / itemsPerPage)
-        app.pubsub.publish('changedItemsPerPage', numberOfItems);
+        app.pubsub.publish('itemsPerPageChanged', numberOfItems);
     };
 
     return {
@@ -405,6 +416,7 @@ app.cart = (function () {
         total.amount = totalAmount;
         total.price = totalPrice;
     };
+    //TODO: remove Total, calculateTotal, and move it to getTotal
     var getTotal = function () {
         return total;
     };
@@ -430,208 +442,208 @@ app.cart = (function () {
 
 /********drawer****************************************************************************************************************************/
 /*App is mentioned explicitly here, because app.draw uses data from the app*/
-app.draw = (function (app) {
-    var helpers = function () {
-        {
-            var createNewElement = function (type, attributeObj) {
-                var element = document.createElement(type.toString());
-                if (attributeObj) {
-                    for (var attr in attributeObj) {
-                        if (attributeObj.hasOwnProperty(attr)) {
-                            element.setAttribute(attr.toString(), attributeObj[attr].toString());
-                        }
-                    }
-                }
-                return element;
-            };
-            var createEmptyDivCell = createNewElement.bind(null, 'div', {class: 'Cell'});
-            var createEmptyDivRow = createNewElement.bind(null, 'div', {class: 'Row'});
-
-            var createHeadingRow = function (fields) {
-                var headingFragment = document.createDocumentFragment();
-                for (var i = 0; i < fields.length; i++) {
-                    var headingCell = createEmptyDivCell();
-                    headingCell.textContent = fields[i];
-                    headingFragment.appendChild(headingCell);
-                }
-                return headingFragment;
-            };
-            var createTableBody = function (items, fields) {
-                var bodyFragment = document.createDocumentFragment();
-                for (var i = 0; i < items.length; i++) {
-                    var row = createTableRow(items[i], fields);
-                    bodyFragment.appendChild(row);
-                }
-                return bodyFragment;
-            };
-            var createTableRow = function (item, fields) {
-                var row = createEmptyDivRow();
-                row.dataset.id = item.id;
-                for (var i = 0; i < fields.length; i += 1) {
-                    var cell = createCell(fields[i], item[fields[i]]);
-                    row.appendChild(cell);
-                }
-                return row;
-            };
-            var createCell = function (type, data) {
-                var cell = createEmptyDivCell(),
-                    cellContent;
-                if (type === 'image') {
-                    cellContent = createNewElement('img', {'src': data});
-                }
-                else {
-                    cellContent = createNewElement('p');
-                    cellContent.textContent = data;
-                }
-                cell.appendChild(cellContent);
-                return cell;
-            };
-
-            return {
-                createEmptyDivCell: createEmptyDivCell,
-                createNewElement: createNewElement,
-                createHeadingRow: createHeadingRow,
-                createTableBody: createTableBody
-            };
-        }
-    }();
-    var mainTable = (function () {
-        var mainTableHeading = document.querySelector('div.mainTable > div.Heading'),
-            mainTableBody = document.querySelector('div.mainTable > div.table-body'),
-            items = app.mainTable.getItems(),
-            headingFields = app.mainTable.getDataFields();
-
-        var headingRow = helpers.createHeadingRow(headingFields);
-        mainTableHeading.appendChild(headingRow);//happens only once!
-
-
-        var updateBody = function () {
-            items = app.mainTable.getItems();
-            var body = helpers.createTableBody(items, headingFields);
-            mainTableBody.innerHTML = "";
-            mainTableBody.appendChild(body);
-            addActionColumn();
-        };
-        var addActionColumn = function () {
-            var rows = document.querySelectorAll('div.mainTable > div.table-body > div.Row');
-            for (var i = 0; i < rows.length; i += 1) {
-                var item = app.data.getItemById(parseInt(rows[i].dataset.id, 10));
-                var cell = createActionCell(item);
-                rows[i].appendChild(cell);
-            }
-        };
-        var createActionCell = function (item) {
-            var cell = helpers.createEmptyDivCell(),
-                input = helpers.createNewElement('input', {
-                    class: 'amount',
-                    type: 'number'
-                }),
-                button = helpers.createNewElement('button', {
-                    class: 'addToCartBtn'
-                });
-            button.textContent = 'Add';
-            button.onclick = function () {
-                app.cart.addToCart(item, input.value);
-            };
-            cell.appendChild(input);
-            cell.appendChild(button);
-            return cell;
-        };
-        var subscriptions = {
-            updateTable: app.pubsub.subscribe('initializedItems', updateBody)
-
-        };
-
-        return {
-            update: updateBody
-        }
-
-    })();
-    var pagination = (function () {
-        var pagesListContainer = document.querySelector('nav > ul.page-list');
-
-        var createPagesList = function () {
-            lastPage = app.pagination.getNumberOfPages();
-            var fragment = document.createDocumentFragment();
-            for (var i = 1; i <= lastPage; i += 1) {
-                var li = createPage(i);
-                fragment.appendChild(li);
-            }
-            return fragment;
-        };
-        var createPage = function (pageNumber) {
-            var li = helpers.createNewElement('li', {class: 'page-number', 'data-number': pageNumber});
-            li.textContent = pageNumber.toString();
-            li.onclick = function () {
-                //TODO: maybe move this to pubsub
-                app.pagination.goToPage(this.dataset.number);
-            };
-            return li;
-        };
-
-        var handleCurrentPageClass = function () {
-            var currentPage = app.pagination.getCurrentPage(),
-                oldCurrentPageLi = document.querySelector('li.page-number.current-page'),
-                newCurrentPageLi = document.querySelector('li.page-number:nth-child(' + currentPage + ')');
-            if (oldCurrentPageLi) {
-                oldCurrentPageLi.classList.remove('current-page');
-            }
-            newCurrentPageLi.classList.add('current-page');
-        };
-        var updatePagesList = function () {
-            var pagesList = createPagesList();
-            pagesListContainer.innerHTML = "";
-            pagesListContainer.appendChild(pagesList);
-            handleCurrentPageClass();
-        };
-
-        var subscriptions = {
-            updatePageClasses: app.pubsub.subscribe('changePage', handleCurrentPageClass),
-            updatePagesListOnItemCountChange: app.pubsub.subscribe('changedItemsPerPage', updatePagesList)
-        };
-    })();
-    /* Item Per Page Input
-     *  TODO: disallow to choose 0
-     * */
-    var itemPerPage = (function () {
-        var input = document.querySelector('input#items-per-page-input');
-        input.onchange = function () {
-            app.pagination.setItemsPerPage(input.value);
-        };
-
-    })();
-    var cart = (function () {
-        var cartHeading = document.querySelector('div.cart > div.Heading'),
-            cartBody = document.querySelector('div.cart > div.table-body'),
-            totalAmount = document.querySelector('div.cart > div.table-footer div.total-amount'),
-            totalPrice = document.querySelector('div.cart > div.table-footer div.total-price'),
-            headingFields = app.cart.getDataFields();
-
-        var headingRow = helpers.createHeadingRow(headingFields);
-        cartHeading.appendChild(headingRow);//happens only once
-
-        var updateBody = function () {
-            items = app.cart.getItems();
-            var body = helpers.createTableBody(items, headingFields);
-            cartBody.innerHTML = "";
-            cartBody.appendChild(body);
-        };
-
-        var updateTotal = function () {
-            var total = app.cart.getTotal();
-            totalAmount.textContent = total.amount.toString();
-            totalPrice.textContent = total.price.toString();
-        };
-
-        var subscriptions = {
-            'updateCart': app.pubsub.subscribe('itemAddedToCart', function () {
-                updateBody();
-                updateTotal()
-            })
-        }
-
-    })();
-})(app);
+//app.draw = (function (app) {
+//    var helpers = function () {
+//        {
+//            var createNewElement = function (type, attributeObj) {
+//                var element = document.createElement(type.toString());
+//                if (attributeObj) {
+//                    for (var attr in attributeObj) {
+//                        if (attributeObj.hasOwnProperty(attr)) {
+//                            element.setAttribute(attr.toString(), attributeObj[attr].toString());
+//                        }
+//                    }
+//                }
+//                return element;
+//            };
+//            var createEmptyDivCell = createNewElement.bind(null, 'div', {class: 'Cell'});
+//            var createEmptyDivRow = createNewElement.bind(null, 'div', {class: 'Row'});
+//
+//            var createHeadingRow = function (fields) {
+//                var headingFragment = document.createDocumentFragment();
+//                for (var i = 0; i < fields.length; i++) {
+//                    var headingCell = createEmptyDivCell();
+//                    headingCell.textContent = fields[i];
+//                    headingFragment.appendChild(headingCell);
+//                }
+//                return headingFragment;
+//            };
+//            var createTableBody = function (items, fields) {
+//                var bodyFragment = document.createDocumentFragment();
+//                for (var i = 0; i < items.length; i++) {
+//                    var row = createTableRow(items[i], fields);
+//                    bodyFragment.appendChild(row);
+//                }
+//                return bodyFragment;
+//            };
+//            var createTableRow = function (item, fields) {
+//                var row = createEmptyDivRow();
+//                row.dataset.id = item.id;
+//                for (var i = 0; i < fields.length; i += 1) {
+//                    var cell = createCell(fields[i], item[fields[i]]);
+//                    row.appendChild(cell);
+//                }
+//                return row;
+//            };
+//            var createCell = function (type, data) {
+//                var cell = createEmptyDivCell(),
+//                    cellContent;
+//                if (type === 'image') {
+//                    cellContent = createNewElement('img', {'src': data});
+//                }
+//                else {
+//                    cellContent = createNewElement('p');
+//                    cellContent.textContent = data;
+//                }
+//                cell.appendChild(cellContent);
+//                return cell;
+//            };
+//
+//            return {
+//                createEmptyDivCell: createEmptyDivCell,
+//                createNewElement: createNewElement,
+//                createHeadingRow: createHeadingRow,
+//                createTableBody: createTableBody
+//            };
+//        }
+//    }();
+//    var mainTable = (function () {
+//        var mainTableHeading = document.querySelector('div.mainTable > div.Heading'),
+//            mainTableBody = document.querySelector('div.mainTable > div.table-body'),
+//            items = app.mainTable.getItems(),
+//            headingFields = app.mainTable.getDataFields();
+//
+//        var headingRow = helpers.createHeadingRow(headingFields);
+//        mainTableHeading.appendChild(headingRow);//happens only once!
+//
+//
+//        var updateBody = function () {
+//            items = app.mainTable.getItems();
+//            var body = helpers.createTableBody(items, headingFields);
+//            mainTableBody.innerHTML = "";
+//            mainTableBody.appendChild(body);
+//            addActionColumn();
+//        };
+//        var addActionColumn = function () {
+//            var rows = document.querySelectorAll('div.mainTable > div.table-body > div.Row');
+//            for (var i = 0; i < rows.length; i += 1) {
+//                var item = app.data.getItemById(parseInt(rows[i].dataset.id, 10));
+//                var cell = createActionCell(item);
+//                rows[i].appendChild(cell);
+//            }
+//        };
+//        var createActionCell = function (item) {
+//            var cell = helpers.createEmptyDivCell(),
+//                input = helpers.createNewElement('input', {
+//                    class: 'amount',
+//                    type: 'number'
+//                }),
+//                button = helpers.createNewElement('button', {
+//                    class: 'addToCartBtn'
+//                });
+//            button.textContent = 'Add';
+//            button.onclick = function () {
+//                app.cart.addToCart(item, input.value);
+//            };
+//            cell.appendChild(input);
+//            cell.appendChild(button);
+//            return cell;
+//        };
+//        var subscriptions = {
+//            updateTable: app.pubsub.subscribe('itemsGenerated', updateBody)
+//
+//        };
+//
+//        return {
+//            update: updateBody
+//        }
+//
+//    })();
+//    var pagination = (function () {
+//        var pagesListContainer = document.querySelector('nav > ul.page-list');
+//
+//        var createPagesList = function () {
+//            lastPage = app.pagination.getNumberOfPages();
+//            var fragment = document.createDocumentFragment();
+//            for (var i = 1; i <= lastPage; i += 1) {
+//                var li = createPage(i);
+//                fragment.appendChild(li);
+//            }
+//            return fragment;
+//        };
+//        var createPage = function (pageNumber) {
+//            var li = helpers.createNewElement('li', {class: 'page-number', 'data-number': pageNumber});
+//            li.textContent = pageNumber.toString();
+//            li.onclick = function () {
+//                //TODO: maybe move this to pubsub
+//                app.pagination.goToPage(this.dataset.number);
+//            };
+//            return li;
+//        };
+//
+//        var handleCurrentPageClass = function () {
+//            var currentPage = app.pagination.getCurrentPage(),
+//                oldCurrentPageLi = document.querySelector('li.page-number.current-page'),
+//                newCurrentPageLi = document.querySelector('li.page-number:nth-child(' + currentPage + ')');
+//            if (oldCurrentPageLi) {
+//                oldCurrentPageLi.classList.remove('current-page');
+//            }
+//            newCurrentPageLi.classList.add('current-page');
+//        };
+//        var updatePagesList = function () {
+//            var pagesList = createPagesList();
+//            pagesListContainer.innerHTML = "";
+//            pagesListContainer.appendChild(pagesList);
+//            handleCurrentPageClass();
+//        };
+//
+//        var subscriptions = {
+//            updatePageClasses: app.pubsub.subscribe('pageChanged', handleCurrentPageClass),
+//            updatePagesListOnItemCountChange: app.pubsub.subscribe('itemsPerPageChanged', updatePagesList)
+//        };
+//    })();
+//    /* Item Per Page Input
+//     *  TODO: disallow to choose 0
+//     * */
+//    var itemPerPage = (function () {
+//        var input = document.querySelector('input#items-per-page-input');
+//        input.onchange = function () {
+//            app.pagination.setItemsPerPage(input.value);
+//        };
+//
+//    })();
+//    var cart = (function () {
+//        var cartHeading = document.querySelector('div.cart > div.Heading'),
+//            cartBody = document.querySelector('div.cart > div.table-body'),
+//            totalAmount = document.querySelector('div.cart > div.table-footer div.total-amount'),
+//            totalPrice = document.querySelector('div.cart > div.table-footer div.total-price'),
+//            headingFields = app.cart.getDataFields();
+//
+//        var headingRow = helpers.createHeadingRow(headingFields);
+//        cartHeading.appendChild(headingRow);//happens only once
+//
+//        var updateBody = function () {
+//            items = app.cart.getItems();
+//            var body = helpers.createTableBody(items, headingFields);
+//            cartBody.innerHTML = "";
+//            cartBody.appendChild(body);
+//        };
+//
+//        var updateTotal = function () {
+//            var total = app.cart.getTotal();
+//            totalAmount.textContent = total.amount.toString();
+//            totalPrice.textContent = total.price.toString();
+//        };
+//
+//        var subscriptions = {
+//            'updateCart': app.pubsub.subscribe('itemAddedToCart', function () {
+//                updateBody();
+//                updateTotal()
+//            })
+//        }
+//
+//    })();
+//})(app);
 
 
 /********initialize app with 2 items per page****************************************************************************************************************************/
@@ -639,4 +651,146 @@ app.draw = (function (app) {
     app.pagination.setItemsPerPage(2);
     app.pagination.goToPage(1);
 })();
+
+
+app.templating = (function () {
+    var templateFiles = [
+        {
+            name: 'mainView',
+            url: 'partials/mainView.hbs',
+            callback: function () {
+                return updateView('mainView')
+            }
+        }
+    ];
+    var templates = {};
+    var loadTemplate = function (templateName, url, callback) {
+        var xhr = new XMLHttpRequest();
+        xhr.open('get', url);
+        xhr.onload = function () {
+            templates[templateName] = Handlebars.compile(this.responseText);
+            callback();
+        };
+        xhr.send();
+    };
+    var initTemplates = (function () {
+        for (var i = 0; i < templateFiles.length; i++) {
+            loadTemplate(templateFiles[i].name, templateFiles[i].url, templateFiles[i].callback);
+        }
+    })();
+
+
+    var views = {
+        mainView: {
+            getContext: function () {
+                return {items: app.mainTable.getItems()};
+            },
+            domElement: document.querySelector('div.mainTable > div.table-body'),
+            eventFunc: inputEvent
+        }
+    };
+    var prepareView = function (name, context, eventFunc) {
+        var html = templates[name](context);
+        var div = document.createElement('div');
+        div.innerHTML = html;
+        if (eventFunc) {
+            div = eventFunc(div);
+        }
+
+        return div;
+
+    };
+    var updateView = function (viewName) {
+        var viewElement = prepareView(viewName, views[viewName].getContext(), views[viewName].eventFunc);
+        views[viewName].domElement.innerHTML = "";
+        views[viewName].domElement.appendChild(viewElement);
+
+    };
+
+    function inputEvent(element) {
+        var row = element.querySelector('.Row');
+        for (var i = 0; i < row.length; i++) {
+            var button = row.querySelector('button.addToCartBtn'),
+                input = row.querySelector('input.amount');
+            var item = app.data.getItemById(Number(input.dataset.id));
+            var action = app.cart.addToCart.bind(null, item, input.value);
+
+
+            button.onclick = function () {
+                app.cart.addToCart(item, input.value);
+            };
+            //
+            //if (Number(input.value) > 0 && Number(input.value) <= item.stock) {
+            //    button.disabled = false;
+            //}
+            //else {
+            //    button.disabled = true;
+            //}
+        }
+        return element;
+
+    }
+
+    function addButtonClickEvent(elem, item) {
+        elem.onclick = function () {
+            app.cart.addToCart(item, input.value);
+        };
+        return elem;
+    }
+
+
+    //var events = {
+    //    inputChanged: handleInputChanged
+    //};
+
+    function getInputs() {
+        return document.querySelectorAll('input.amount');
+    }
+
+    function getButtons() {
+        return document.querySelectorAll('button.addToCartBtn');
+    }
+
+    var subscriptions = {
+        updateMainTable: app.pubsub.subscribe('itemsGenerated', function () {
+            return updateView('mainView')
+        })
+    };
+
+
+    function handleInputChanged(index, currentItem) {
+        return function () {
+            var buttons = document.querySelectorAll('button.addToCartBtn');
+            if (Number(this.value) > 0 && Number(this.value) <= currentItem.stock) {
+                buttons[index].disabled = false;
+                buttons[index].onclick = function () {
+                    console.log(this);
+                };
+            }
+        };
+    }
+
+
+    var addInputButtonEvent = function () {
+        var inputs = document.querySelectorAll('input.amount');
+        for (var i = 0; i < inputs.length; i++) {
+            var item = app.data.getItemById(Number(inputs[i].dataset.id));
+            inputs[i].addEventListener('change', handleInputChanged(i, item));
+        }
+    };
+
+    return {
+        templates: templates,
+        loadTemplate: loadTemplate,
+        templateFiles: templateFiles,
+        initTemplates: initTemplates,
+        //updateMainTable: updateMainTable,
+        addInputButtonEvent: addInputButtonEvent
+
+        //renderMainTable: renderMainTable
+    };
+
+})
+();
+
 

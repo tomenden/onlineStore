@@ -1,0 +1,13 @@
+{{#each items}}
+    <div class="Row" data-id={{id}}>
+        <div class="Cell"><p>{{id}}</p></div>
+        <div class="Cell"><p>{{name}}</p></div>
+        <div class="Cell"><p>{{description}} </p></div>
+        <div class="Cell"><img src={{image}}></div>
+        <div class="Cell"><p>{{price}}</p></div>
+        <div class="Cell"><p>{{stock}}</p></div>
+        <div class="Cell"><input class="amount" type="number" data-id={{id}}>
+            <button class="addToCartBtn" disabled>Add</button>
+        </div>
+    </div>
+{{/each}}
