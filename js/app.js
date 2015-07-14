@@ -10,11 +10,10 @@ var app = {};
 
 app.pubsub = (function () {
     var subscriptions = {}, counter = 0;
-    var subscribe = function (eventType, callback) {
+    var subscribe = function (eventType, callback) {//TODO: allow to accept multiple eventTypes/callbacks
         subscriptions[eventType] = subscriptions[eventType] || {};
         subscriptions[eventType][counter] = callback;
         return counter++;
-
     };
     var publish = function (eventType, args) {
         args = Array.prototype.slice.call(arguments, 1);
@@ -440,212 +439,6 @@ app.cart = (function () {
     };
 })();
 
-/********drawer****************************************************************************************************************************/
-/*App is mentioned explicitly here, because app.draw uses data from the app*/
-//app.draw = (function (app) {
-//    var helpers = function () {
-//        {
-//            var createNewElement = function (type, attributeObj) {
-//                var element = document.createElement(type.toString());
-//                if (attributeObj) {
-//                    for (var attr in attributeObj) {
-//                        if (attributeObj.hasOwnProperty(attr)) {
-//                            element.setAttribute(attr.toString(), attributeObj[attr].toString());
-//                        }
-//                    }
-//                }
-//                return element;
-//            };
-//            var createEmptyDivCell = createNewElement.bind(null, 'div', {class: 'Cell'});
-//            var createEmptyDivRow = createNewElement.bind(null, 'div', {class: 'Row'});
-//
-//            var createHeadingRow = function (fields) {
-//                var headingFragment = document.createDocumentFragment();
-//                for (var i = 0; i < fields.length; i++) {
-//                    var headingCell = createEmptyDivCell();
-//                    headingCell.textContent = fields[i];
-//                    headingFragment.appendChild(headingCell);
-//                }
-//                return headingFragment;
-//            };
-//            var createTableBody = function (items, fields) {
-//                var bodyFragment = document.createDocumentFragment();
-//                for (var i = 0; i < items.length; i++) {
-//                    var row = createTableRow(items[i], fields);
-//                    bodyFragment.appendChild(row);
-//                }
-//                return bodyFragment;
-//            };
-//            var createTableRow = function (item, fields) {
-//                var row = createEmptyDivRow();
-//                row.dataset.id = item.id;
-//                for (var i = 0; i < fields.length; i += 1) {
-//                    var cell = createCell(fields[i], item[fields[i]]);
-//                    row.appendChild(cell);
-//                }
-//                return row;
-//            };
-//            var createCell = function (type, data) {
-//                var cell = createEmptyDivCell(),
-//                    cellContent;
-//                if (type === 'image') {
-//                    cellContent = createNewElement('img', {'src': data});
-//                }
-//                else {
-//                    cellContent = createNewElement('p');
-//                    cellContent.textContent = data;
-//                }
-//                cell.appendChild(cellContent);
-//                return cell;
-//            };
-//
-//            return {
-//                createEmptyDivCell: createEmptyDivCell,
-//                createNewElement: createNewElement,
-//                createHeadingRow: createHeadingRow,
-//                createTableBody: createTableBody
-//            };
-//        }
-//    }();
-//    var mainTable = (function () {
-//        var mainTableHeading = document.querySelector('div.mainTable > div.Heading'),
-//            mainTableBody = document.querySelector('div.mainTable > div.table-body'),
-//            items = app.mainTable.getItems(),
-//            headingFields = app.mainTable.getDataFields();
-//
-//        var headingRow = helpers.createHeadingRow(headingFields);
-//        mainTableHeading.appendChild(headingRow);//happens only once!
-//
-//
-//        var updateBody = function () {
-//            items = app.mainTable.getItems();
-//            var body = helpers.createTableBody(items, headingFields);
-//            mainTableBody.innerHTML = "";
-//            mainTableBody.appendChild(body);
-//            addActionColumn();
-//        };
-//        var addActionColumn = function () {
-//            var rows = document.querySelectorAll('div.mainTable > div.table-body > div.Row');
-//            for (var i = 0; i < rows.length; i += 1) {
-//                var item = app.data.getItemById(parseInt(rows[i].dataset.id, 10));
-//                var cell = createActionCell(item);
-//                rows[i].appendChild(cell);
-//            }
-//        };
-//        var createActionCell = function (item) {
-//            var cell = helpers.createEmptyDivCell(),
-//                input = helpers.createNewElement('input', {
-//                    class: 'amount',
-//                    type: 'number'
-//                }),
-//                button = helpers.createNewElement('button', {
-//                    class: 'addToCartBtn'
-//                });
-//            button.textContent = 'Add';
-//            button.onclick = function () {
-//                app.cart.addToCart(item, input.value);
-//            };
-//            cell.appendChild(input);
-//            cell.appendChild(button);
-//            return cell;
-//        };
-//        var subscriptions = {
-//            updateTable: app.pubsub.subscribe('itemsGenerated', updateBody)
-//
-//        };
-//
-//        return {
-//            update: updateBody
-//        }
-//
-//    })();
-//    var pagination = (function () {
-//        var pagesListContainer = document.querySelector('nav > ul.page-list');
-//
-//        var createPagesList = function () {
-//            lastPage = app.pagination.getNumberOfPages();
-//            var fragment = document.createDocumentFragment();
-//            for (var i = 1; i <= lastPage; i += 1) {
-//                var li = createPage(i);
-//                fragment.appendChild(li);
-//            }
-//            return fragment;
-//        };
-//        var createPage = function (pageNumber) {
-//            var li = helpers.createNewElement('li', {class: 'page-number', 'data-number': pageNumber});
-//            li.textContent = pageNumber.toString();
-//            li.onclick = function () {
-//                //TODO: maybe move this to pubsub
-//                app.pagination.goToPage(this.dataset.number);
-//            };
-//            return li;
-//        };
-//
-//        var handleCurrentPageClass = function () {
-//            var currentPage = app.pagination.getCurrentPage(),
-//                oldCurrentPageLi = document.querySelector('li.page-number.current-page'),
-//                newCurrentPageLi = document.querySelector('li.page-number:nth-child(' + currentPage + ')');
-//            if (oldCurrentPageLi) {
-//                oldCurrentPageLi.classList.remove('current-page');
-//            }
-//            newCurrentPageLi.classList.add('current-page');
-//        };
-//        var updatePagesList = function () {
-//            var pagesList = createPagesList();
-//            pagesListContainer.innerHTML = "";
-//            pagesListContainer.appendChild(pagesList);
-//            handleCurrentPageClass();
-//        };
-//
-//        var subscriptions = {
-//            updatePageClasses: app.pubsub.subscribe('pageChanged', handleCurrentPageClass),
-//            updatePagesListOnItemCountChange: app.pubsub.subscribe('itemsPerPageChanged', updatePagesList)
-//        };
-//    })();
-//    /* Item Per Page Input
-//     *  TODO: disallow to choose 0
-//     * */
-//    var itemPerPage = (function () {
-//        var input = document.querySelector('input#items-per-page-input');
-//        input.onchange = function () {
-//            app.pagination.setItemsPerPage(input.value);
-//        };
-//
-//    })();
-//    var cart = (function () {
-//        var cartHeading = document.querySelector('div.cart > div.Heading'),
-//            cartBody = document.querySelector('div.cart > div.table-body'),
-//            totalAmount = document.querySelector('div.cart > div.table-footer div.total-amount'),
-//            totalPrice = document.querySelector('div.cart > div.table-footer div.total-price'),
-//            headingFields = app.cart.getDataFields();
-//
-//        var headingRow = helpers.createHeadingRow(headingFields);
-//        cartHeading.appendChild(headingRow);//happens only once
-//
-//        var updateBody = function () {
-//            items = app.cart.getItems();
-//            var body = helpers.createTableBody(items, headingFields);
-//            cartBody.innerHTML = "";
-//            cartBody.appendChild(body);
-//        };
-//
-//        var updateTotal = function () {
-//            var total = app.cart.getTotal();
-//            totalAmount.textContent = total.amount.toString();
-//            totalPrice.textContent = total.price.toString();
-//        };
-//
-//        var subscriptions = {
-//            'updateCart': app.pubsub.subscribe('itemAddedToCart', function () {
-//                updateBody();
-//                updateTotal()
-//            })
-//        }
-//
-//    })();
-//})(app);
-
-
 /********initialize app with 2 items per page****************************************************************************************************************************/
 (function init() {
     app.pagination.setItemsPerPage(2);
@@ -786,7 +579,6 @@ app.templating = (function () {
             app.cart.addToCart(item, amount);
         };
     }
-
     function preparePageListEvents(pageListElement) {
         for (var i = 0; i < pageListElement.children.length; i++) {
             var child = pageListElement.children[i];
