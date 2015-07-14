@@ -579,6 +579,7 @@ app.templating = (function () {
             app.cart.addToCart(item, amount);
         };
     }
+
     function preparePageListEvents(pageListElement) {
         for (var i = 0; i < pageListElement.children.length; i++) {
             var child = pageListElement.children[i];
@@ -588,6 +589,14 @@ app.templating = (function () {
         }
         return pageListElement;
     }
+
+    (function itemsPerPageEvent(inputElement) {
+        inputElement.onchange = function () {
+            if (this.value > 0 && this.value < app.data.getItemsLength()) {
+                app.pagination.setItemsPerPage(Number(this.value));
+            }
+        };
+    })(document.querySelector('input#items-per-page-input'));
 
     var subscriptions = {
         updateMainTable: app.pubsub.subscribe('itemsGenerated', function () {
