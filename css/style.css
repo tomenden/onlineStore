@@ -75,6 +75,6 @@ input.amount {
     width: 2rem;
 }
 
-div.cart > div.table-footer {
+div.table-footer {
     font-weight: bold;
 }

@@ -668,6 +668,13 @@ app.templating = (function () {
             callback: function () {
                 return updateView('pageList');
             }
+        },
+        {
+            name: 'cartView',
+            url: 'partials/cartView.hbs',
+            callback: function () {
+                return updateView('cartView');
+            }
         }
     ];
     var templates = {};
@@ -693,7 +700,7 @@ app.templating = (function () {
             } else {
                 return '';
             }
-        })
+        });
     })();
 
     var views = {
@@ -720,6 +727,18 @@ app.templating = (function () {
             },
             eventFunc: preparePageListEvents
 
+        },
+        cartView: {
+            getContext: function () {
+                return {
+                    items: app.cart.getItems(),
+                    total: app.cart.getTotal()
+                };
+            },
+            getDomElement: function () {
+                return document.querySelector('div.cartView');
+            },
+            eventFunc: ''//TODO: prepareCartEvents
         }
     };
 
@@ -753,6 +772,7 @@ app.templating = (function () {
         return mainViewElement;
 
     }
+
     function handleChangeAmountEvent(event) {
         event = event || window.event;
         var target = event.target,
@@ -783,6 +803,9 @@ app.templating = (function () {
         }),
         updatePageList: app.pubsub.subscribe('pageChanged', function () {
             return updateView('pageList');
+        }),
+        updateCart: app.pubsub.subscribe('itemAddedToCart', function () {
+            return updateView('cartView');
         })
     };
 
@@ -799,7 +822,6 @@ app.templating = (function () {
         updateView: updateView
     };
 
-})
-();
+})();
 
 
