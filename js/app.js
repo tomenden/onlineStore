@@ -665,7 +665,7 @@ app.templating = (function () {
         {
             name: 'pageList',
             url: 'partials/page-list.hbs',
-            callback: function() {
+            callback: function () {
                 return updateView('pageList');
             }
         }
@@ -686,7 +686,7 @@ app.templating = (function () {
         }
     })();
     var initHelpers = (function () {
-        Handlebars.registerHelper("currentPageClass", function(page) {
+        Handlebars.registerHelper("currentPageClass", function (page) {
             var currentPage = app.pagination.getCurrentPage();
             if (page === currentPage) {
                 return ' current-page';
@@ -701,28 +701,21 @@ app.templating = (function () {
             getContext: function () {
                 return {items: app.mainTable.getItems()};
             },
-            getDomElement: function(){
+            getDomElement: function () {
                 return document.querySelector('div.mainTable > div.mainView');
             },
             eventFunc: prepareMainViewEvents
         },
         pageList: {
-            getContext: function() {
+            getContext: function () {
                 var numberOfPages = app.pagination.getNumberOfPages(),
-                    currentPage = app.pagination.getCurrentPage();
-
-                    context = {
-                        pages: [],
-                        isCurrentPage: function (page) {
-                            return page === currentPage;
-                        }
-                    };
+                    pages = [];
                 for (var i = 1; i <= numberOfPages; i++) {
-                    context.pages.push(i);
+                    pages.push(i);
                 }
-                return context;
+                return {pages: pages};
             },
-            getDomElement: function(){
+            getDomElement: function () {
                 return document.querySelector('nav > ul.pageList');
             },
             eventFunc: preparePageListEvents
@@ -760,6 +753,7 @@ app.templating = (function () {
         return mainViewElement;
 
     }
+
     function handleChangeAmountEvent(event) {
         event = event || window.event;
         var target = event.target,
@@ -775,7 +769,7 @@ app.templating = (function () {
     }
 
     function preparePageListEvents(pageListElement) {
-        for (var i = 0; i < pageListElement.children.length; i++ ) {
+        for (var i = 0; i < pageListElement.children.length; i++) {
             var child = pageListElement.children[i];
             child.onclick = function () {
                 app.pagination.goToPage(Number(this.dataset.number));
@@ -788,7 +782,7 @@ app.templating = (function () {
         updateMainTable: app.pubsub.subscribe('itemsGenerated', function () {
             return updateView('mainView')
         }),
-        updatePageList: app.pubsub.subscribe('pageChanged', function(){
+        updatePageList: app.pubsub.subscribe('pageChanged', function () {
             return updateView('pageList');
         })
     };
