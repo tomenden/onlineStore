@@ -428,6 +428,8 @@ app.cart = (function () {
         return fields;
     };
 
+    //TODO: add coupons
+
     var subscriptions = {
         calculateTotal: app.pubsub.subscribe('itemAddedToCart', calculateTotal)
     };
