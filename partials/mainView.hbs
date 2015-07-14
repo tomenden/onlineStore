@@ -4,7 +4,18 @@
         <div class="Cell"><p>{{name}}</p></div>
         <div class="Cell"><p>{{description}} </p></div>
         <div class="Cell"><img src={{image}}></div>
-        <div class="Cell"><p>{{price}}</p></div>
+        <div class="Cell">
+            <p>
+                {{log this}}
+                {{#ifEquals type "onsale"}}
+                    <span class="old-price">{{price}}</span>
+                    <span class="sale-price">{{saleprice}}</span>
+                {{else}}
+                    {{price}}
+                {{/ifEquals}}
+            </p>
+
+        </div>
         <div class="Cell"><p>{{stock}}</p></div>
         <div class="Cell"><input class="amount" type="number" data-id={{id}}>
             <button class="addToCartBtn" data-id={{id}} disabled>Add</button>

@@ -282,14 +282,15 @@ app.data = (function () {
     };
 
     //TODO: new types of items
-    //(function () {
-    //    for (var i = 0; i < items.length; i += 1) {
-    //        if (i % 5 === 0) {
-    //            items[i] = Object.create(items[i]);
-    //            items[i].type = 'super-dooper';
-    //        }
-    //    }
-    //})();
+    (function addOnsaleItemType() {
+        for (var i = 0; i < items.length; i += 1) {
+            if (i % 5 === 0) {
+                items[i] = Object.create(items[i]);
+                items[i].type = 'onsale';
+                items[i].saleprice = Math.floor(items[i].price * 0.75).toString();
+            }
+        }
+    })();
 
     return {
         getItems: getItems,
@@ -493,6 +494,17 @@ app.templating = (function () {
             } else {
                 return '';
             }
+        });
+        // Console log helper for handlebars. TODO: remove
+        Handlebars.registerHelper("log", function(something) {
+            console.log(something);
+        });
+        Handlebars.registerHelper('ifEquals', function(a, b, options) {
+            if (a === b) {
+                return options.fn(this);
+            }
+
+            return options.inverse(this);
         });
     })();
 
