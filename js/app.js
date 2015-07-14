@@ -281,7 +281,6 @@ app.data = (function () {
         console.log('could not find item');
     };
 
-    //TODO: new types of items
     (function addOnsaleItemType() {
         for (var i = 0; i < items.length; i += 1) {
             if (i % 5 === 0) {
