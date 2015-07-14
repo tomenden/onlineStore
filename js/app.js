@@ -701,7 +701,6 @@ app.templating = (function () {
             getContext: function () {
                 return {items: app.mainTable.getItems()};
             },
-            domElement: document.querySelector('div.mainTable > div.mainView'),
             getDomElement: function(){
                 return document.querySelector('div.mainTable > div.mainView');
             },
@@ -723,8 +722,6 @@ app.templating = (function () {
                 }
                 return context;
             },
-            //TODO: remove this
-            domElement: document.querySelector('nav > ul.pageList'),
             getDomElement: function(){
                 return document.querySelector('nav > ul.pageList');
             },
@@ -735,7 +732,7 @@ app.templating = (function () {
 
     var prepareView = function (name, context, eventFunc) {
         var html = templates[name](context);
-        var containerType = views[name].domElement.tagName || 'div';
+        var containerType = views[name].getDomElement().tagName || 'div';
         var container = document.createElement(containerType);
         container.classList.add(name);
         container.innerHTML = html;
@@ -749,10 +746,8 @@ app.templating = (function () {
     var updateView = function (viewName) {
         var viewElement = prepareView(viewName, views[viewName].getContext(), views[viewName].eventFunc);
         var domElement = views[viewName].getDomElement();
-        //views[viewName].domElement.innerHTML = "";
         domElement.innerHTML = "";
         domElement.parentNode.replaceChild(viewElement, domElement);
-        //views[viewName].domElement.parentNode.replaceChild(viewElement, views[viewName].domElement);
 
     };
 
@@ -760,7 +755,6 @@ app.templating = (function () {
         var rows = mainViewElement.querySelectorAll('.Row');
         for (var i = 0; i < rows.length; i++) {
             var row = rows[i];
-            //addRowClickEvent(row);
             row.addEventListener('change', handleChangeAmountEvent);
         }
         return mainViewElement;
