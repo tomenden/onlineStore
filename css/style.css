@@ -15,7 +15,7 @@
     text-align: center;
 }
 
-div.table-body {
+div.mainView {
     display: table-row-group;
 }
 

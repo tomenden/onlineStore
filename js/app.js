@@ -686,12 +686,14 @@ app.templating = (function () {
                 return {items: app.mainTable.getItems()};
             },
             domElement: document.querySelector('div.mainTable > div.table-body'),
-            eventFunc: inputEvent
+            eventFunc: prepareMainViewEvents
         }
     };
+
     var prepareView = function (name, context, eventFunc) {
         var html = templates[name](context);
         var div = document.createElement('div');
+        div.classList.add(name);
         div.innerHTML = html;
         if (eventFunc) {
             div = eventFunc(div);
@@ -703,45 +705,36 @@ app.templating = (function () {
     var updateView = function (viewName) {
         var viewElement = prepareView(viewName, views[viewName].getContext(), views[viewName].eventFunc);
         views[viewName].domElement.innerHTML = "";
-        views[viewName].domElement.appendChild(viewElement);
+        views[viewName].domElement.parentNode.replaceChild(viewElement, views[viewName].domElement);
 
     };
 
-    function inputEvent(element) {
-        var row = element.querySelector('.Row');
-        for (var i = 0; i < row.length; i++) {
-            var button = row.querySelector('button.addToCartBtn'),
-                input = row.querySelector('input.amount');
-            var item = app.data.getItemById(Number(input.dataset.id));
-            var action = app.cart.addToCart.bind(null, item, input.value);
-
-
-            button.onclick = function () {
-                app.cart.addToCart(item, input.value);
-            };
-            //
-            //if (Number(input.value) > 0 && Number(input.value) <= item.stock) {
-            //    button.disabled = false;
-            //}
-            //else {
-            //    button.disabled = true;
-            //}
+    function prepareMainViewEvents(element) {
+        var rows = element.querySelectorAll('.Row');
+        for (var i = 0; i < rows.length; i++) {
+            var row = rows[i];
+            //addRowClickEvent(row);
+            row.addEventListener('change', handleChangeAmountEvent);
         }
         return element;
 
     }
 
-    function addButtonClickEvent(elem, item) {
-        elem.onclick = function () {
-            app.cart.addToCart(item, input.value);
+
+    function handleChangeAmountEvent(event) {
+        event = event || window.event;
+        var target = event.target,
+            amount = Number(target.value),
+            item = app.data.getItemById(Number(this.dataset.id)),
+            button = this.querySelector('button.addToCartBtn');
+
+        button.disabled = amount < 0 || amount > item.stock;
+
+        button.onclick = function () {
+            app.cart.addToCart(item, amount);
         };
-        return elem;
     }
 
-
-    //var events = {
-    //    inputChanged: handleInputChanged
-    //};
 
     function getInputs() {
         return document.querySelectorAll('input.amount');
@@ -758,36 +751,16 @@ app.templating = (function () {
     };
 
 
-    function handleInputChanged(index, currentItem) {
-        return function () {
-            var buttons = document.querySelectorAll('button.addToCartBtn');
-            if (Number(this.value) > 0 && Number(this.value) <= currentItem.stock) {
-                buttons[index].disabled = false;
-                buttons[index].onclick = function () {
-                    console.log(this);
-                };
-            }
-        };
-    }
-
-
-    var addInputButtonEvent = function () {
-        var inputs = document.querySelectorAll('input.amount');
-        for (var i = 0; i < inputs.length; i++) {
-            var item = app.data.getItemById(Number(inputs[i].dataset.id));
-            inputs[i].addEventListener('change', handleInputChanged(i, item));
-        }
-    };
-
     return {
         templates: templates,
         loadTemplate: loadTemplate,
         templateFiles: templateFiles,
         initTemplates: initTemplates,
         //updateMainTable: updateMainTable,
-        addInputButtonEvent: addInputButtonEvent
+        //addInputButtonEvent: addInputButtonEvent
 
         //renderMainTable: renderMainTable
+        updateView: updateView
     };
 
 })
