@@ -602,17 +602,7 @@ app.templating = (function () {
     };
 
 
-    return {
-        templates: templates,
-        loadTemplate: loadTemplate,
-        templateFiles: templateFiles,
-        initTemplates: initTemplates,
-        //updateMainTable: updateMainTable,
-        //addInputButtonEvent: addInputButtonEvent
-
-        //renderMainTable: renderMainTable
-        updateView: updateView
-    };
+    return {};
 
 })();
 
