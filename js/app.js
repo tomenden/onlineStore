@@ -287,7 +287,9 @@ app.data = (function () {
             if (i % 5 === 0) {
                 items[i] = Object.create(items[i]);
                 items[i].type = 'onsale';
-                items[i].saleprice = Math.floor(items[i].price * 0.75).toString();
+                items[i].oldprice = items[i].price;
+                items[i].price = Math.floor(items[i].price * 0.75).toString();
+                //items[i].saleprice = Math.floor(items[i].price * 0.75).toString();
             }
         }
     })();
