@@ -15,7 +15,7 @@
     text-align: center;
 }
 
-div.mainView {
+div.mainView, div.cartView {
     display: table-row-group;
 }
 

@@ -664,7 +664,7 @@ app.templating = (function () {
         },
         {
             name: 'pageList',
-            url: 'partials/page-list.hbs',
+            url: 'partials/pageList.hbs',
             callback: function () {
                 return updateView('pageList');
             }
@@ -753,7 +753,6 @@ app.templating = (function () {
         return mainViewElement;
 
     }
-
     function handleChangeAmountEvent(event) {
         event = event || window.event;
         var target = event.target,
