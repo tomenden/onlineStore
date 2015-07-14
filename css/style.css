@@ -49,7 +49,7 @@ div.Row:nth-of-type(2n) {
     background-color: rgba(211,211,211, 0.5);
 }
 
-ul.page-list {
+ul.pageList {
     list-style-type: none;
     text-align: center;
 }

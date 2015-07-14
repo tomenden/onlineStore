@@ -661,6 +661,13 @@ app.templating = (function () {
             callback: function () {
                 return updateView('mainView')
             }
+        },
+        {
+            name: 'pageList',
+            url: 'partials/page-list.hbs',
+            callback: function() {
+                return updateView('pageList');
+            }
         }
     ];
     var templates = {};
@@ -678,49 +685,87 @@ app.templating = (function () {
             loadTemplate(templateFiles[i].name, templateFiles[i].url, templateFiles[i].callback);
         }
     })();
-
+    var initHelpers = (function () {
+        Handlebars.registerHelper("currentPageClass", function(page) {
+            var currentPage = app.pagination.getCurrentPage();
+            if (page === currentPage) {
+                return ' current-page';
+            } else {
+                return '';
+            }
+        })
+    })();
 
     var views = {
         mainView: {
             getContext: function () {
                 return {items: app.mainTable.getItems()};
             },
-            domElement: document.querySelector('div.mainTable > div.table-body'),
+            domElement: document.querySelector('div.mainTable > div.mainView'),
+            getDomElement: function(){
+                return document.querySelector('div.mainTable > div.mainView');
+            },
             eventFunc: prepareMainViewEvents
+        },
+        pageList: {
+            getContext: function() {
+                var numberOfPages = app.pagination.getNumberOfPages(),
+                    currentPage = app.pagination.getCurrentPage();
+
+                    context = {
+                        pages: [],
+                        isCurrentPage: function (page) {
+                            return page === currentPage;
+                        }
+                    };
+                for (var i = 1; i <= numberOfPages; i++) {
+                    context.pages.push(i);
+                }
+                return context;
+            },
+            //TODO: remove this
+            domElement: document.querySelector('nav > ul.pageList'),
+            getDomElement: function(){
+                return document.querySelector('nav > ul.pageList');
+            },
+            eventFunc: preparePageListEvents
+
         }
     };
 
     var prepareView = function (name, context, eventFunc) {
         var html = templates[name](context);
-        var div = document.createElement('div');
-        div.classList.add(name);
-        div.innerHTML = html;
+        var containerType = views[name].domElement.tagName || 'div';
+        var container = document.createElement(containerType);
+        container.classList.add(name);
+        container.innerHTML = html;
         if (eventFunc) {
-            div = eventFunc(div);
+            container = eventFunc(container);
         }
 
-        return div;
+        return container;
 
     };
     var updateView = function (viewName) {
         var viewElement = prepareView(viewName, views[viewName].getContext(), views[viewName].eventFunc);
-        views[viewName].domElement.innerHTML = "";
-        views[viewName].domElement.parentNode.replaceChild(viewElement, views[viewName].domElement);
+        var domElement = views[viewName].getDomElement();
+        //views[viewName].domElement.innerHTML = "";
+        domElement.innerHTML = "";
+        domElement.parentNode.replaceChild(viewElement, domElement);
+        //views[viewName].domElement.parentNode.replaceChild(viewElement, views[viewName].domElement);
 
     };
 
-    function prepareMainViewEvents(element) {
-        var rows = element.querySelectorAll('.Row');
+    function prepareMainViewEvents(mainViewElement) {
+        var rows = mainViewElement.querySelectorAll('.Row');
         for (var i = 0; i < rows.length; i++) {
             var row = rows[i];
             //addRowClickEvent(row);
             row.addEventListener('change', handleChangeAmountEvent);
         }
-        return element;
+        return mainViewElement;
 
     }
-
-
     function handleChangeAmountEvent(event) {
         event = event || window.event;
         var target = event.target,
@@ -735,18 +780,22 @@ app.templating = (function () {
         };
     }
 
-
-    function getInputs() {
-        return document.querySelectorAll('input.amount');
-    }
-
-    function getButtons() {
-        return document.querySelectorAll('button.addToCartBtn');
+    function preparePageListEvents(pageListElement) {
+        for (var i = 0; i < pageListElement.children.length; i++ ) {
+            var child = pageListElement.children[i];
+            child.onclick = function () {
+                app.pagination.goToPage(Number(this.dataset.number));
+            };
+        }
+        return pageListElement;
     }
 
     var subscriptions = {
         updateMainTable: app.pubsub.subscribe('itemsGenerated', function () {
             return updateView('mainView')
+        }),
+        updatePageList: app.pubsub.subscribe('pageChanged', function(){
+            return updateView('pageList');
         })
     };
 
