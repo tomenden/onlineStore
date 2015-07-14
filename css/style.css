@@ -78,3 +78,13 @@ input.amount {
 div.table-footer {
     font-weight: bold;
 }
+
+span.old-price {
+    color: #ff0000;
+    text-decoration: line-through;
+}
+
+span.sale-price {
+    color: #008000;
+    font-weight: bold;
+}
