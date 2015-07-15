@@ -404,22 +404,38 @@ app.cart = (function () {
         app.pubsub.publish('itemAddedToCart', item);
 
     };
-    var total = {
-        amount: 0,
-        price: 0
-    };
-    var calculateTotal = function () {
-        var totalAmount = 0, totalPrice = 0;
+    //var total = {
+    //    amount: 0,
+    //    price: 0
+    //};
+    var calculateTotal = function (couponCode) {
+        //applyItemsCoupon(couponCode)//TODO: note - couponCode maybe undefined
+        var amount = 0, price = 0;
         for (var i = 0; i < items.length; i++) {
-            totalAmount += items[i].amount;
-            totalPrice += items[i].price;
+            amount += items[i].amount;
+            price += items[i].price;
         }
-        total.amount = totalAmount;
-        total.price = totalPrice;
+        //applyTotalCoupon(couponCode)
+        //var totalAmount = 0, totalPrice = 0;
+        //for (var i = 0; i < items.length; i++) {
+        //    totalAmount += items[i].amount;
+        //    totalPrice += items[i].price;
+        //}
+        //total.amount = totalAmount;
+        //total.price = totalPrice;
     };
-    //TODO: remove Total, calculateTotal, and move it to getTotal
-    var getTotal = function () {
-        return total;
+    var getTotal = function (couponCode) {
+        //applyItemsCoupon(couponCode)//TODO: note - couponCode maybe undefined
+        var amount = 0, price = 0;
+        for (var i = 0; i < items.length; i++) {
+            amount += items[i].amount;
+            price += items[i].price;
+        }
+        //applyTotalCoupon(couponCode)
+        return {
+            amount: amount,
+            price: price
+        }
     };
     var getItems = function () {
         return items;
@@ -430,13 +446,8 @@ app.cart = (function () {
 
     //TODO: add coupons
 
-    var subscriptions = {
-        calculateTotal: app.pubsub.subscribe('itemAddedToCart', calculateTotal)
-    };
-
     return {
         addToCart: addToCart,
-        calculateTotal: calculateTotal,
         getTotal: getTotal,
         getItems: getItems,
         getDataFields: getDataFields
