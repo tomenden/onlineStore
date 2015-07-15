@@ -375,16 +375,15 @@ app.pagination = (function () {
 /********cart****************************************************************************************************************************/
 
 app.cart = (function () {
-    var items = [],
-        fields = ['name', 'amount', 'price'];
-    var itemIndexInCart = function (item) {
+    var items = [];
+    function itemIndexInCart (item) {/* helper for addToCart */
         for (var i = 0; i < items.length; i += 1) {
             if (items[i].id === item.id) {
                 return i;
             }
         }
         return -1;
-    };
+    }
     var addToCart = function (item, amount) {
         amount = parseInt(amount, 10);
         var itemIndex = itemIndexInCart(item);
@@ -404,26 +403,6 @@ app.cart = (function () {
         app.pubsub.publish('itemAddedToCart', item);
 
     };
-    //var total = {
-    //    amount: 0,
-    //    price: 0
-    //};
-    var calculateTotal = function (couponCode) {
-        //applyItemsCoupon(couponCode)//TODO: note - couponCode maybe undefined
-        var amount = 0, price = 0;
-        for (var i = 0; i < items.length; i++) {
-            amount += items[i].amount;
-            price += items[i].price;
-        }
-        //applyTotalCoupon(couponCode)
-        //var totalAmount = 0, totalPrice = 0;
-        //for (var i = 0; i < items.length; i++) {
-        //    totalAmount += items[i].amount;
-        //    totalPrice += items[i].price;
-        //}
-        //total.amount = totalAmount;
-        //total.price = totalPrice;
-    };
     var getTotal = function (couponCode) {
         //applyItemsCoupon(couponCode)//TODO: note - couponCode maybe undefined
         var amount = 0, price = 0;
@@ -440,17 +419,13 @@ app.cart = (function () {
     var getItems = function () {
         return items;
     };
-    var getDataFields = function () {
-        return fields;
-    };
 
     //TODO: add coupons
 
     return {
         addToCart: addToCart,
         getTotal: getTotal,
-        getItems: getItems,
-        getDataFields: getDataFields
+        getItems: getItems
     };
 })();
 
