@@ -88,3 +88,17 @@ span.sale-price {
     color: #008000;
     font-weight: bold;
 }
+
+div.items-per-page {
+    text-align: center;
+
+}
+
+div.cart {
+    position: fixed;
+    top: 10rem;
+}
+
+div.cart-table {
+    padding: 2rem;
+}

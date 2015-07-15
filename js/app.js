@@ -40,6 +40,7 @@ app.pubsub = (function () {
 /********app data****************************************************************************************************************************/
 
 app.data = (function () {
+    /* Items Data */
     var items = [
         {
             "id": 1,
@@ -266,6 +267,17 @@ app.data = (function () {
             "stock": 5
         }
     ];
+    (function addOnsaleItemType() {
+        for (var i = 0; i < items.length; i += 1) {
+            if (i % 5 === 0) {
+                items[i] = Object.create(items[i]);
+                items[i].type = 'onsale';
+                items[i].oldprice = items[i].price;
+                items[i].price = Math.floor(items[i].price * 0.75).toString();
+            }
+        }
+    })();
+    /* Items methods */
     var getItems = function () {
         return items;
     };
@@ -281,22 +293,45 @@ app.data = (function () {
         console.log('could not find item');
     };
 
-    (function addOnsaleItemType() {
-        for (var i = 0; i < items.length; i += 1) {
-            if (i % 5 === 0) {
-                items[i] = Object.create(items[i]);
-                items[i].type = 'onsale';
-                items[i].oldprice = items[i].price;
-                items[i].price = Math.floor(items[i].price * 0.75).toString();
-                //items[i].saleprice = Math.floor(items[i].price * 0.75).toString();
+    /* Coupon Data */
+    var basicCoupon = {
+        code: "12345"
+    };
+
+    function createTotalPercentageCoupon(code, percentage) {
+        var totalCoupon = Object.create(basicCoupon);
+        totalCoupon.code = code;
+        totalCoupon.percentDiscount = percentage;
+        return totalCoupon;
+    }
+
+    function createFreeItemCoupon(code, minimumItemsCount) {
+        var freeItemCoupon = Object.create(basicCoupon);
+        freeItemCoupon.code = code;
+        freeItemCoupon.minimumItemsCount = minimumItemsCount;
+        return freeItemCoupon;
+
+    }
+
+    var coupons = [
+        createTotalPercentageCoupon('Totally', '50'),
+        createFreeItemCoupon('12345', 3)
+    ];
+
+    function getMatchingCoupon(code) {
+        for (var i = 0; i < coupons.length; i++) {
+            if (coupons[i].code === code) {
+                return coupons[i];
             }
         }
-    })();
+        console.log('invalid coupon');
+    }
 
     return {
         getItems: getItems,
         getItemsLength: getItemsLength,
-        getItemById: getItemById
+        getItemById: getItemById,
+        getMatchingCoupon: getMatchingCoupon
     };
 })();
 
@@ -376,7 +411,8 @@ app.pagination = (function () {
 
 app.cart = (function () {
     var items = [];
-    function itemIndexInCart (item) {/* helper for addToCart */
+
+    function itemIndexInCart(item) {/* helper for addToCart */
         for (var i = 0; i < items.length; i += 1) {
             if (items[i].id === item.id) {
                 return i;
@@ -384,6 +420,7 @@ app.cart = (function () {
         }
         return -1;
     }
+
     var addToCart = function (item, amount) {
         amount = parseInt(amount, 10);
         var itemIndex = itemIndexInCart(item);
@@ -404,13 +441,14 @@ app.cart = (function () {
 
     };
     var getTotal = function (couponCode) {
-        //applyItemsCoupon(couponCode)//TODO: note - couponCode maybe undefined
         var amount = 0, price = 0;
         for (var i = 0; i < items.length; i++) {
             amount += items[i].amount;
             price += items[i].price;
         }
-        //applyTotalCoupon(couponCode)
+        if (couponCode) {
+            price = getCoupenizedPrice(price, couponCode);
+        }
         return {
             amount: amount,
             price: price
@@ -421,11 +459,38 @@ app.cart = (function () {
     };
 
     //TODO: add coupons
+    function getCoupenizedPrice(regularPrice, couponCode) {
+        var coupon = app.data.getMatchingCoupon(couponCode);
+        if (coupon && coupon.percentDiscount) {
+            return regularPrice * (Number(coupon.percentDiscount) / 100);
+        }
+        return regularPrice;
+    }
+
+    function applyItemsCoupon(couponCode) {
+        var coupon = app.data.getMatchingCoupon(couponCode),
+            total = getTotal();
+
+        if (coupon && coupon.minimumItemsCount && total.amount >= coupon.minimumItemsCount) {
+            var index = getMostExpensiveItemIndex();
+            items[index].price -= items[index].price / items[index].amount;
+        }
+        return getItems();
+    }
+
+    function getMostExpensiveItemIndex() {
+        var item = items.reduce(function (previous, current, index) {
+            return Math.max(current.price, Number(previous.price));
+        });
+        return itemIndexInCart(item);
+    }
 
     return {
         addToCart: addToCart,
         getTotal: getTotal,
-        getItems: getItems
+        getItems: getItems,
+        getMostExpensiveItemIndex: getMostExpensiveItemIndex,
+        applyItemsCoupon: applyItemsCoupon
     };
 })();
 
@@ -485,10 +550,10 @@ app.templating = (function () {
             }
         });
         // Console log helper for handlebars. TODO: remove
-        Handlebars.registerHelper("log", function(something) {
+        Handlebars.registerHelper("log", function (something) {
             console.log(something);
         });
-        Handlebars.registerHelper('ifEquals', function(a, b, options) {
+        Handlebars.registerHelper('ifEquals', function (a, b, options) {
             if (a === b) {
                 return options.fn(this);
             }
@@ -530,7 +595,7 @@ app.templating = (function () {
                 };
             },
             getDomElement: function () {
-                return document.querySelector('div.cartView');
+                return document.querySelector('div.cart');
             },
             eventFunc: ''//TODO: prepareCartEvents
         }
@@ -538,9 +603,9 @@ app.templating = (function () {
 
     var prepareView = function (name, context, eventFunc) {
         var html = templates[name](context);
-        var containerType = views[name].getDomElement().tagName || 'div';
-        var container = document.createElement(containerType);
-        container.classList.add(name);
+        var domElement = views[name].getDomElement();
+        var container = document.createElement(domElement.tagName);
+        container.classList.add(domElement.className);
         container.innerHTML = html;
         if (eventFunc) {
             container = eventFunc(container);
