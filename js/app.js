@@ -293,6 +293,33 @@ app.data = (function () {
         console.log('could not find item');
     };
 
+
+    function sortDataLowestFirst(field) {
+        items.sort(function (a, b) {
+            if (a[field] < b[field]) {
+                return -1;
+            }
+            if (a[field] > b[field]) {
+                return 1;
+            }
+            return 0;
+        });
+        return items;
+    }
+
+    var sortTypes = {
+        'sort-lowestFirst': sortDataLowestFirst,
+        'sort-highestFirst': function (field) {
+            return sortDataLowestFirst(field).reverse();
+        }
+    };
+
+
+    var sortData = function (type, field) {
+        sortTypes[type](field);
+        app.pubsub.publish('items sorted');
+    };
+
     /* Coupon Data */
     var basicCoupon = {
         code: "12345"
@@ -331,7 +358,8 @@ app.data = (function () {
         getItems: getItems,
         getItemsLength: getItemsLength,
         getItemById: getItemById,
-        getMatchingCoupon: getMatchingCoupon
+        getMatchingCoupon: getMatchingCoupon,
+        sortData: sortData
     };
 })();
 
@@ -396,6 +424,10 @@ app.pagination = (function () {
         itemsPerPage = numberOfItems;
         numberOfPages = Math.ceil(app.data.getItemsLength() / itemsPerPage)
         app.pubsub.publish('itemsPerPageChanged', numberOfItems);
+    };
+
+    var subscriptions = {
+        sortedItems: app.pubsub.subscribe('items sorted', goToPage.bind(null, 1))
     };
 
     return {
@@ -576,8 +608,10 @@ app.templating = (function () {
     var views = {
         mainView: {
             getContext: function () {
-                return {items: app.mainTable.getItems(),
-                        properties: ['id', 'name', 'description', 'image', 'price', 'stock']};
+                return {
+                    items: app.mainTable.getItems(),
+                    properties: ['id', 'name', 'description', 'image', 'price', 'stock']
+                };
             },
             getDomElement: function () {
                 return document.querySelector('div.mainTable > div.mainView');
@@ -634,7 +668,11 @@ app.templating = (function () {
     };
 
     function prepareMainViewEvents(mainViewElement) {
+        var heading = mainViewElement.querySelector('.mainView > div.Heading');
         var rows = mainViewElement.querySelectorAll('.Row');
+        heading.addEventListener('click', function (event) {
+            app.data.sortData(event.target.className, event.target.parentNode.dataset.field);
+        });
         for (var i = 0; i < rows.length; i++) {
             var row = rows[i];
             row.addEventListener('change', handleChangeAmountEvent);
@@ -697,7 +735,7 @@ app.templating = (function () {
         coupons: [
             app.pubsub.subscribe('Apply Coupon Button clicked', app.cart.setCouponCode),
             app.pubsub.subscribe('Apply Coupon Button clicked', app.cart.applyItemsCoupon),
-            app.pubsub.subscribe('Apply Coupon Button clicked', function (){
+            app.pubsub.subscribe('Apply Coupon Button clicked', function () {
                 return updateView('cartView');
             })
         ]
