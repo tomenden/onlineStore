@@ -441,7 +441,7 @@ app.pagination = pagination;
 //app.pagination = pagination(app.pubsub, app.data.getItemsLength());
 /********cart****************************************************************************************************************************/
 
-app.cart = (function (pubsubService) {
+app.cart = (function (pubsubService, couponFunc) {
     var items = [], couponCode;
 
     function itemIndexInCart(item) {
@@ -477,9 +477,10 @@ app.cart = (function (pubsubService) {
             amount += items[i].amount;
             price += items[i].price;
         }
-        oldPrice = price;
-        price = getCoupenizedPrice(price, couponCode);
-
+        if (couponCode) {
+            oldPrice = price;
+            price = getCoupenizedPrice(price, couponCode);
+        }
         return {
             amount: amount,
             price: price,
@@ -495,7 +496,7 @@ app.cart = (function (pubsubService) {
     };
 
     function getCoupenizedPrice(regularPrice, couponCode) {
-        var coupon = app.data.getMatchingCoupon(couponCode);
+        var coupon = couponFunc(couponCode);
         if (coupon && coupon.percentDiscount) {
             return regularPrice * (Number(coupon.percentDiscount) / 100);
         }
@@ -503,7 +504,7 @@ app.cart = (function (pubsubService) {
     }
 
     function applyItemsCoupon(couponCode) {
-        var coupon = app.data.getMatchingCoupon(couponCode),
+        var coupon = couponFunc(couponCode),
             total = getTotal();
 
         if (coupon && coupon.minimumItemsCount && total.amount >= coupon.minimumItemsCount) {
@@ -532,7 +533,7 @@ app.cart = (function (pubsubService) {
         applyItemsCoupon: applyItemsCoupon,
         setCouponCode: setCouponCode
     };
-})(app.pubsub);
+})(app.pubsub, app.data.getMatchingCoupon);
 
 /********initialize app with 2 items per page****************************************************************************************************************************/
 (function init(data) {
