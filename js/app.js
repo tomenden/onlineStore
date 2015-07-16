@@ -426,7 +426,7 @@ app.pagination = (function (pubsubService, totalNumberOfItems) {
     };
 
     var subscriptions = {
-        sortedItems: pubsubService.subscribe('items sorted', goToPage.bind(null, 1))
+        onItemsSorted: pubsubService.subscribe('items sorted', goToPage.bind(null, 1))
     };
 
     return {
@@ -595,7 +595,6 @@ app.templating = (function () {
         Handlebars.registerHelper('isTotalDiscounted', function (totalPrice) {
 
         });
-        // Console log helper for handlebars. TODO: remove
         Handlebars.registerHelper("log", function (something) {
             console.log(something);
         });
