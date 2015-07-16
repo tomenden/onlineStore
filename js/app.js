@@ -609,7 +609,7 @@ app.templating = (function () {
             getDomElement: function () {
                 return document.querySelector('div.cart');
             },
-            eventFunc: prepareCartEvents//TODO: prepareCartEvents
+            eventFunc: prepareCartEvents
         }
     };
 
@@ -629,7 +629,6 @@ app.templating = (function () {
     var updateView = function (viewName) {
         var viewElement = prepareView(viewName, views[viewName].getContext(), views[viewName].eventFunc);
         var domElement = views[viewName].getDomElement();
-        //domElement.innerHTML = "";
         domElement.parentNode.replaceChild(viewElement, domElement);
 
     };
