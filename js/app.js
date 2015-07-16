@@ -437,6 +437,8 @@ var pagination = (function (pubsubService, totalNumberOfItems) {
     };
 })(app.pubsub, app.data.getItemsLength());
 app.pagination = pagination;
+//TODO: decide which is better - calling the function pagination immediately (as now), or outside, as below
+//app.pagination = pagination(app.pubsub, app.data.getItemsLength());
 /********cart****************************************************************************************************************************/
 
 app.cart = (function () {
