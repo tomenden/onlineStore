@@ -494,7 +494,6 @@ app.cart = (function (pubsubService, couponFunc) {
     var setCouponCode = function (code) {
         couponCode = code;
     };
-
     function getCoupenizedPrice(regularPrice, couponCode) {
         var coupon = couponFunc(couponCode);
         if (coupon && coupon.percentDiscount) {
@@ -506,7 +505,6 @@ app.cart = (function (pubsubService, couponFunc) {
     function applyItemsCoupon(couponCode) {
         var coupon = couponFunc(couponCode),
             total = getTotal();
-
         if (coupon && coupon.minimumItemsCount && total.amount >= coupon.minimumItemsCount) {
             var index = getMostExpensiveItemIndex();
             items[index].price -= items[index].price / items[index].amount;
@@ -514,7 +512,6 @@ app.cart = (function (pubsubService, couponFunc) {
         }
         return getItems();
     }
-
     function getMostExpensiveItemIndex() {
         var item = items.reduce(function (previous, current) {
             if (current.price > Number(previous.price)) {
@@ -525,13 +522,14 @@ app.cart = (function (pubsubService, couponFunc) {
         return itemIndexInCart(item);
     }
 
+    var subscriptions = {
+        'onApplyCouponClickedSetCoupon': pubsubService.subscribe('Apply Coupon Button clicked', setCouponCode),
+        'onApplyCouponClicked': pubsubService.subscribe('Apply Coupon Button clicked', applyItemsCoupon)
+    };
     return {
         addToCart: addToCart,
         getTotal: getTotal,
-        getItems: getItems,
-        getMostExpensiveItemIndex: getMostExpensiveItemIndex,
-        applyItemsCoupon: applyItemsCoupon,
-        setCouponCode: setCouponCode
+        getItems: getItems
     };
 })(app.pubsub, app.data.getMatchingCoupon);
 
@@ -738,8 +736,6 @@ app.templating = (function () {
         }),
 
         coupons: [
-            app.pubsub.subscribe('Apply Coupon Button clicked', app.cart.setCouponCode),
-            app.pubsub.subscribe('Apply Coupon Button clicked', app.cart.applyItemsCoupon),
             app.pubsub.subscribe('Apply Coupon Button clicked', function () {
                 return updateView('cartView');
             })
