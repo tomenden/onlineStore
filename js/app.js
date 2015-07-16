@@ -378,7 +378,7 @@ mainTable = (function (data, pubsubService) {
         var dataLength = app.data.getItemsLength();
         stopIndex = (stopIndex < dataLength) ? stopIndex : dataLength;
         items = data.slice(firstItemIndex, stopIndex);
-        app.pubsub.publish('itemsGenerated');
+        pubsubService.publish('itemsGenerated');
     };
     var getItems = function () {
         return items;
