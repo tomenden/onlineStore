@@ -39,7 +39,7 @@ app.pubsub = (function () {
 
 /********app data****************************************************************************************************************************/
 
-app.data = (function () {
+app.data = (function (pubsubService) {
     /* Items Data */
     var items = [
         {
@@ -317,7 +317,7 @@ app.data = (function () {
     };
     var sortData = function (type, field) {
         sortTypes[type](field);
-        app.pubsub.publish('items sorted');
+        pubsubService.publish('items sorted');
     };
 
     /* Coupon Creation */
@@ -335,7 +335,6 @@ app.data = (function () {
         freeItemCoupon.code = code;
         freeItemCoupon.minimumItemsCount = minimumItemsCount;
         return freeItemCoupon;
-
     }
     /* Coupon Data */
     var coupons = [
@@ -353,7 +352,7 @@ app.data = (function () {
     }
     /* Subscriptions */
     var subscriptions = {
-        'updateStock': app.pubsub.subscribe('itemAddedToCart', updateItemStock)
+        'updateStock': pubsubService.subscribe('itemAddedToCart', updateItemStock)
     };
 
     return {
@@ -363,7 +362,7 @@ app.data = (function () {
         getMatchingCoupon: getMatchingCoupon,
         sortData: sortData
     };
-})();
+})(app.pubsub);
 
 /********main table****************************************************************************************************************************/
 
@@ -521,8 +520,11 @@ app.cart = (function () {
     }
 
     function getMostExpensiveItemIndex() {
-        var item = items.reduce(function (previous, current, index) {
-            return Math.max(current.price, Number(previous.price));
+        var item = items.reduce(function (previous, current) {
+            if (current.price > Number(previous.price)) {
+                return current;
+            }
+            return previous;
         });
         return itemIndexInCart(item);
     }
