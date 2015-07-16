@@ -1,6 +1,9 @@
-{{#each properties}}
-    {{log this}}
-{{/each}}
+<div class="Heading">
+    {{#each properties}}
+        <div class="Cell"><span class="sort-highestFirst">&#8593;</span>{{this}}<span class="sort-lowestFirst">&#8595;</span></div>
+    {{/each}}
+</div>
+
 {{#each items}}
     <div class="Row" data-id={{id}}>
         <div class="Cell"><p>{{id}}</p></div>
