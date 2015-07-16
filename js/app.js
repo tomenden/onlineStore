@@ -396,13 +396,14 @@ app.mainTable = mainTable;
 
 /********pagination****************************************************************************************************************************/
 
-app.pagination = (function (pubsubService, totalNumberOfItems) {
+var pagination = (function (pubsubService, totalNumberOfItems) {
     var currentPage = 1, itemsPerPage, numberOfPages, stopItemIndex, firstItemIndex;
 
     function updateIndices () {
         firstItemIndex = itemsPerPage * currentPage - itemsPerPage;
         stopItemIndex = itemsPerPage * currentPage;
     }
+
     var goToPage = function (pageNumber) {
         pageNumber = (pageNumber <= numberOfPages) ? pageNumber : numberOfPages;
         currentPage = pageNumber;
@@ -433,7 +434,7 @@ app.pagination = (function (pubsubService, totalNumberOfItems) {
         setItemsPerPage: setItemsPerPage
     };
 })(app.pubsub, app.data.getItemsLength());
-
+app.pagination = pagination;
 /********cart****************************************************************************************************************************/
 
 app.cart = (function () {
