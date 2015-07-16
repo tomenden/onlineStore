@@ -440,25 +440,31 @@ app.cart = (function () {
         app.pubsub.publish('itemAddedToCart', item);
 
     };
-    var getTotal = function (couponCode) {
+
+    var couponCode;
+    var setCouponCode = function (code) {
+        couponCode = code;
+    };
+    var getTotal = function () {
         var amount = 0, price = 0;
         for (var i = 0; i < items.length; i++) {
             amount += items[i].amount;
             price += items[i].price;
         }
         if (couponCode) {
+            var oldPrice = price;
             price = getCoupenizedPrice(price, couponCode);
         }
         return {
             amount: amount,
-            price: price
-        }
+            price: price,
+            totalCouponApplied: oldPrice && oldPrice !== price
+        };
     };
     var getItems = function () {
         return items;
     };
 
-    //TODO: add coupons
     function getCoupenizedPrice(regularPrice, couponCode) {
         var coupon = app.data.getMatchingCoupon(couponCode);
         if (coupon && coupon.percentDiscount) {
@@ -474,6 +480,7 @@ app.cart = (function () {
         if (coupon && coupon.minimumItemsCount && total.amount >= coupon.minimumItemsCount) {
             var index = getMostExpensiveItemIndex();
             items[index].price -= items[index].price / items[index].amount;
+            items[index].couponApplied = true;
         }
         return getItems();
     }
@@ -490,7 +497,8 @@ app.cart = (function () {
         getTotal: getTotal,
         getItems: getItems,
         getMostExpensiveItemIndex: getMostExpensiveItemIndex,
-        applyItemsCoupon: applyItemsCoupon
+        applyItemsCoupon: applyItemsCoupon,
+        setCouponCode: setCouponCode
     };
 })();
 
@@ -549,6 +557,9 @@ app.templating = (function () {
                 return '';
             }
         });
+        Handlebars.registerHelper('isTotalDiscounted', function (totalPrice) {
+
+        });
         // Console log helper for handlebars. TODO: remove
         Handlebars.registerHelper("log", function (something) {
             console.log(something);
@@ -597,7 +608,7 @@ app.templating = (function () {
             getDomElement: function () {
                 return document.querySelector('div.cart');
             },
-            eventFunc: ''//TODO: prepareCartEvents
+            eventFunc: prepareCartEvents//TODO: prepareCartEvents
         }
     };
 
@@ -629,7 +640,15 @@ app.templating = (function () {
             row.addEventListener('change', handleChangeAmountEvent);
         }
         return mainViewElement;
+    }
 
+    function prepareCartEvents(cartElement) {
+        var couponCodeBox = cartElement.querySelector('input#coupon-code');
+        var apply = cartElement.querySelector('button.apply');
+        apply.onclick = function () {
+            app.pubsub.publish('Apply Coupon Button clicked', couponCodeBox.value);
+        };
+        return cartElement;
     }
 
     function handleChangeAmountEvent(event) {
@@ -673,7 +692,15 @@ app.templating = (function () {
         }),
         updateCart: app.pubsub.subscribe('itemAddedToCart', function () {
             return updateView('cartView');
-        })
+        }),
+
+        coupons: [
+            app.pubsub.subscribe('Apply Coupon Button clicked', app.cart.setCouponCode),
+            app.pubsub.subscribe('Apply Coupon Button clicked', app.cart.applyItemsCoupon),
+            app.pubsub.subscribe('Apply Coupon Button clicked', function (){
+                return updateView('cartView');
+            })
+        ]
     };
 
 

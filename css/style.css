@@ -102,3 +102,11 @@ div.cart {
 div.cart-table {
     padding: 2rem;
 }
+
+div.Row.discountedItem {
+    background-color: lightseagreen;
+}
+
+div.total.coupenized {
+    background-color: yellow;
+}
