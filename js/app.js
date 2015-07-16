@@ -320,18 +320,16 @@ app.data = (function () {
         app.pubsub.publish('items sorted');
     };
 
-    /* Coupon Data */
+    /* Coupon Creation */
     var basicCoupon = {
         code: "12345"
     };
-
     function createTotalPercentageCoupon(code, percentage) {
         var totalCoupon = Object.create(basicCoupon);
         totalCoupon.code = code;
         totalCoupon.percentDiscount = percentage;
         return totalCoupon;
     }
-
     function createFreeItemCoupon(code, minimumItemsCount) {
         var freeItemCoupon = Object.create(basicCoupon);
         freeItemCoupon.code = code;
@@ -339,7 +337,7 @@ app.data = (function () {
         return freeItemCoupon;
 
     }
-
+    /* Coupon Data */
     var coupons = [
         createTotalPercentageCoupon('Totally', '50'),
         createFreeItemCoupon('12345', 3)
@@ -746,9 +744,6 @@ app.templating = (function () {
             })
         ]
     };
-
-
-    return {};
 
 })();
 
