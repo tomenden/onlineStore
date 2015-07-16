@@ -392,12 +392,11 @@ mainTable = (function (data, pubsubService) {
         getItems: getItems
     };
 })(app.data.getItems(), app.pubsub);
-
 app.mainTable = mainTable;
 
 /********pagination****************************************************************************************************************************/
 
-app.pagination = (function () {
+app.pagination = (function (pubsubService, totalNumberOfItems) {
     var currentPage = 1, itemsPerPage, numberOfPages, stopItemIndex, firstItemIndex;
 
     function updateIndices () {
@@ -408,7 +407,7 @@ app.pagination = (function () {
         pageNumber = (pageNumber <= numberOfPages) ? pageNumber : numberOfPages;
         currentPage = pageNumber;
         updateIndices();
-        app.pubsub.publish('pageChanged', firstItemIndex, stopItemIndex);
+        pubsubService.publish('pageChanged', firstItemIndex, stopItemIndex);
     };
     var getNumberOfPages = function () {
         return numberOfPages;
@@ -419,16 +418,15 @@ app.pagination = (function () {
     var getItemsPerPage = function () {
         return itemsPerPage;
     };
-    var setItemsPerPage = function (numberOfItems) {
-        itemsPerPage = numberOfItems;
-        //stopItemIndex = itemsPerPage * currentPage;
-        numberOfPages = Math.ceil(app.data.getItemsLength() / itemsPerPage);
+    var setItemsPerPage = function (numberOfItemsPerPage) {
+        itemsPerPage = numberOfItemsPerPage;
+        numberOfPages = Math.ceil(totalNumberOfItems / itemsPerPage);
         updateIndices();
-        app.pubsub.publish('itemsPerPageChanged', firstItemIndex, stopItemIndex);
+        pubsubService.publish('itemsPerPageChanged', firstItemIndex, stopItemIndex);
     };
 
     var subscriptions = {
-        sortedItems: app.pubsub.subscribe('items sorted', goToPage.bind(null, 1))
+        sortedItems: pubsubService.subscribe('items sorted', goToPage.bind(null, 1))
     };
 
     return {
@@ -438,7 +436,7 @@ app.pagination = (function () {
         getItemsPerPage: getItemsPerPage,
         setItemsPerPage: setItemsPerPage
     };
-})();
+})(app.pubsub, app.data.getItemsLength());
 
 /********cart****************************************************************************************************************************/
 
@@ -540,10 +538,10 @@ app.cart = (function () {
 })();
 
 /********initialize app with 2 items per page****************************************************************************************************************************/
-(function init() {
+(function init(data) {
     app.pagination.setItemsPerPage(2);
     app.pagination.goToPage(1);
-})();
+})(app.data);
 
 
 app.templating = (function () {
@@ -730,9 +728,13 @@ app.templating = (function () {
         updateMainTable: app.pubsub.subscribe('itemsGenerated', function () {
             return updateView('mainView')
         }),
-        updatePageList: app.pubsub.subscribe('pageChanged', function () {
+        onPageChanged: app.pubsub.subscribe('pageChanged', function () {
             return updateView('pageList');
         }),
+        onItemsPerPageChanged: app.pubsub.subscribe('itemsPerPageChanged', function(){
+            updateView('pageList');
+        }),
+
         updateCart: app.pubsub.subscribe('itemAddedToCart', function () {
             updateView('mainView');
             updateView('cartView');
