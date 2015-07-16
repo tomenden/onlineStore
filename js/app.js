@@ -292,8 +292,11 @@ app.data = (function () {
         }
         console.log('could not find item');
     };
+    function updateItemStock(item, amount) {
+        item.stock -= Number(amount);
+    }
 
-
+    /* Sorting */
     function sortDataLowestFirst(field) {
         items.sort(function (a, b) {
             if (a[field] < b[field]) {
@@ -306,15 +309,12 @@ app.data = (function () {
         });
         return items;
     }
-
     var sortTypes = {
         'sort-lowestFirst': sortDataLowestFirst,
         'sort-highestFirst': function (field) {
             return sortDataLowestFirst(field).reverse();
         }
     };
-
-
     var sortData = function (type, field) {
         sortTypes[type](field);
         app.pubsub.publish('items sorted');
@@ -353,6 +353,10 @@ app.data = (function () {
         }
         console.log('invalid coupon');
     }
+
+    var subscriptions = {
+        'updateStock': app.pubsub.subscribe('itemAddedToCart', updateItemStock)
+    };
 
     return {
         getItems: getItems,
@@ -468,10 +472,11 @@ app.cart = (function () {
             items[itemIndex].amount += amount;
             items[itemIndex].price += amount * parseInt(item.price, 10);
         }
-
-        app.pubsub.publish('itemAddedToCart', item);
+        app.pubsub.publish('itemAddedToCart', item, amount);
 
     };
+
+
 
     var couponCode;
     var setCouponCode = function (code) {
@@ -729,7 +734,8 @@ app.templating = (function () {
             return updateView('pageList');
         }),
         updateCart: app.pubsub.subscribe('itemAddedToCart', function () {
-            return updateView('cartView');
+            updateView('mainView');
+            updateView('cartView');
         }),
 
         coupons: [
