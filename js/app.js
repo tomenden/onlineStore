@@ -369,7 +369,6 @@ app.data = (function () {
 
 mainTable = (function (data, pubsubService) {
     var items = [];
-    var dataFields = Object.keys(data[0]);
     var generateItems = function (firstItemIndex, stopIndex) {
         var dataLength = app.data.getItemsLength();
         stopIndex = (stopIndex < dataLength) ? stopIndex : dataLength;
@@ -378,9 +377,6 @@ mainTable = (function (data, pubsubService) {
     };
     var getItems = function () {
         return items;
-    };
-    var getDataFields = function () {
-        return dataFields;
     };
 
     var subscriptions = {//TODO: create dictionary of constants > events
@@ -394,8 +390,7 @@ mainTable = (function (data, pubsubService) {
 
     return {
         generateItems: generateItems,
-        getItems: getItems,
-        getDataFields: getDataFields
+        getItems: getItems
     };
 })(app.data.getItems(), app.pubsub);
 
