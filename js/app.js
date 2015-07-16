@@ -39,7 +39,7 @@ app.pubsub = (function () {
 
 /********app data****************************************************************************************************************************/
 
-app.data = (function (pubsubService) {
+var data = (function (pubsubService) {
     /* Items Data */
     var items = [
         {
@@ -363,7 +363,7 @@ app.data = (function (pubsubService) {
         sortData: sortData
     };
 })(app.pubsub);
-
+app.data = data;
 /********main table****************************************************************************************************************************/
 
 mainTable = (function (data, pubsubService) {
