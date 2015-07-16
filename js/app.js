@@ -441,10 +441,10 @@ app.pagination = pagination;
 //app.pagination = pagination(app.pubsub, app.data.getItemsLength());
 /********cart****************************************************************************************************************************/
 
-app.cart = (function () {
-    var items = [];
+app.cart = (function (pubsubService) {
+    var items = [], couponCode;
 
-    function itemIndexInCart(item) {/* helper for addToCart */
+    function itemIndexInCart(item) {
         for (var i = 0; i < items.length; i += 1) {
             if (items[i].id === item.id) {
                 return i;
@@ -468,25 +468,18 @@ app.cart = (function () {
             items[itemIndex].amount += amount;
             items[itemIndex].price += amount * parseInt(item.price, 10);
         }
-        app.pubsub.publish('itemAddedToCart', item, amount);
-
+        pubsubService.publish('itemAddedToCart', item, amount);
     };
 
-
-    var couponCode;
-    var setCouponCode = function (code) {
-        couponCode = code;
-    };
     var getTotal = function () {
-        var amount = 0, price = 0;
+        var amount = 0, price = 0, oldPrice;
         for (var i = 0; i < items.length; i++) {
             amount += items[i].amount;
             price += items[i].price;
         }
-        if (couponCode) {
-            var oldPrice = price;
-            price = getCoupenizedPrice(price, couponCode);
-        }
+        oldPrice = price;
+        price = getCoupenizedPrice(price, couponCode);
+
         return {
             amount: amount,
             price: price,
@@ -495,6 +488,10 @@ app.cart = (function () {
     };
     var getItems = function () {
         return items;
+    };
+
+    var setCouponCode = function (code) {
+        couponCode = code;
     };
 
     function getCoupenizedPrice(regularPrice, couponCode) {
@@ -535,7 +532,7 @@ app.cart = (function () {
         applyItemsCoupon: applyItemsCoupon,
         setCouponCode: setCouponCode
     };
-})();
+})(app.pubsub);
 
 /********initialize app with 2 items per page****************************************************************************************************************************/
 (function init(data) {
