@@ -292,6 +292,7 @@ var data = (function (pubsubService) {
         }
         console.log('could not find item');
     };
+
     function updateItemStock(item, amount) {
         item.stock -= Number(amount);
     }
@@ -309,6 +310,7 @@ var data = (function (pubsubService) {
         });
         return items;
     }
+
     var sortTypes = {
         'sort-lowestFirst': sortDataLowestFirst,
         'sort-highestFirst': function (field) {
@@ -324,18 +326,21 @@ var data = (function (pubsubService) {
     var basicCoupon = {
         code: "12345"
     };
+
     function createTotalPercentageCoupon(code, percentage) {
         var totalCoupon = Object.create(basicCoupon);
         totalCoupon.code = code;
         totalCoupon.percentDiscount = percentage;
         return totalCoupon;
     }
+
     function createFreeItemCoupon(code, minimumItemsCount) {
         var freeItemCoupon = Object.create(basicCoupon);
         freeItemCoupon.code = code;
         freeItemCoupon.minimumItemsCount = minimumItemsCount;
         return freeItemCoupon;
     }
+
     /* Coupon Data */
     var coupons = [
         createTotalPercentageCoupon('Totally', '50'),
@@ -350,6 +355,7 @@ var data = (function (pubsubService) {
         }
         console.log('invalid coupon');
     }
+
     /* Subscriptions */
     var subscriptions = {
         'updateStock': pubsubService.subscribe('itemAddedToCart', updateItemStock)
@@ -379,12 +385,8 @@ mainTable = (function (data, pubsubService) {
     };
 
     var subscriptions = {//TODO: create dictionary of constants > events
-        changePage: pubsubService.subscribe('pageChanged', function (start, stop) {
-            generateItems(start, stop);
-        }),
-        changeItemsPerPage: pubsubService.subscribe('itemsPerPageChanged', function (start, stop) {
-            generateItems(start, stop);
-        })
+        changePage: pubsubService.subscribe('pageChanged', generateItems),
+        changeItemsPerPage: pubsubService.subscribe('itemsPerPageChanged', generateItems)
     };
 
     return {
@@ -399,7 +401,7 @@ app.mainTable = mainTable;
 var pagination = (function (pubsubService, totalNumberOfItems) {
     var currentPage = 1, itemsPerPage, numberOfPages, stopItemIndex, firstItemIndex;
 
-    function updateIndices () {
+    function updateIndices() {
         firstItemIndex = itemsPerPage * currentPage - itemsPerPage;
         stopItemIndex = itemsPerPage * currentPage;
     }
@@ -467,7 +469,6 @@ app.cart = (function () {
         app.pubsub.publish('itemAddedToCart', item, amount);
 
     };
-
 
 
     var couponCode;
@@ -727,7 +728,7 @@ app.templating = (function () {
         onPageChanged: app.pubsub.subscribe('pageChanged', function () {
             return updateView('pageList');
         }),
-        onItemsPerPageChanged: app.pubsub.subscribe('itemsPerPageChanged', function(){
+        onItemsPerPageChanged: app.pubsub.subscribe('itemsPerPageChanged', function () {
             updateView('pageList');
         }),
 
