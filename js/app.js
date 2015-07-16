@@ -415,9 +415,6 @@ app.pagination = (function (pubsubService, totalNumberOfItems) {
     var getCurrentPage = function () {
         return currentPage;
     };
-    var getItemsPerPage = function () {
-        return itemsPerPage;
-    };
     var setItemsPerPage = function (numberOfItemsPerPage) {
         itemsPerPage = numberOfItemsPerPage;
         numberOfPages = Math.ceil(totalNumberOfItems / itemsPerPage);
@@ -433,7 +430,6 @@ app.pagination = (function (pubsubService, totalNumberOfItems) {
         goToPage: goToPage,
         getNumberOfPages: getNumberOfPages,
         getCurrentPage: getCurrentPage,
-        getItemsPerPage: getItemsPerPage,
         setItemsPerPage: setItemsPerPage
     };
 })(app.pubsub, app.data.getItemsLength());
