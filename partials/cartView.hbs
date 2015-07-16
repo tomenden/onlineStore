@@ -1,29 +1,27 @@
-<div class="cart">
-    <div class="cart-table">
-        <div class="Heading">
-            <div class="Cell">name</div>
-            <div class="Cell">amount</div>
-            <div class="Cell">price</div>
-        </div>
-        {{#each items}}
-            <div class="Row{{#ifEquals couponApplied true}} discountedItem{{/ifEquals}}"
+<div class="cart-table">
+    <div class="Heading">
+        <div class="Cell">name</div>
+        <div class="Cell">amount</div>
+        <div class="Cell">price</div>
+    </div>
+    {{#each items}}
+        <div class="Row{{#ifEquals couponApplied true}} discountedItem{{/ifEquals}}"
              data-id={{id}}>
-                <div class="Cell"><p>{{name}}</p></div>
-                <div class="Cell"><p>{{amount}}</p></div>
-                <div class="Cell"><p>{{price}}</p></div>
-            </div>
-        {{/each}}
-        <div class="total table-footer Row{{#ifEquals total.totalCouponApplied true}} coupenized{{/ifEquals}}">
-            <div class="Cell">Total:</div>
-            <div class="Cell total-amount">{{total.amount}}</div>
-            <div class="Cell total-price">{{total.price}}</div>
+            <div class="Cell"><p>{{name}}</p></div>
+            <div class="Cell"><p>{{amount}}</p></div>
+            <div class="Cell"><p>{{price}}</p></div>
         </div>
+    {{/each}}
+    <div class="total table-footer Row{{#ifEquals total.totalCouponApplied true}} coupenized{{/ifEquals}}">
+        <div class="Cell">Total:</div>
+        <div class="Cell total-amount">{{total.amount}}</div>
+        <div class="Cell total-price">{{total.price}}</div>
     </div>
+</div>
 
 
-    <div class="coupon">
-        <label for="coupon-code">Coupon Code:</label>
-        <input id="coupon-code">
-        <button class="apply">Apply</button>
-    </div>
+<div class="coupon">
+    <label for="coupon-code">Coupon Code:</label>
+    <input id="coupon-code">
+    <button class="apply">Apply</button>
 </div>

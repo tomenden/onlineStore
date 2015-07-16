@@ -576,7 +576,8 @@ app.templating = (function () {
     var views = {
         mainView: {
             getContext: function () {
-                return {items: app.mainTable.getItems()};
+                return {items: app.mainTable.getItems(),
+                        properties: ['id', 'name', 'description', 'image', 'price', 'stock']};
             },
             getDomElement: function () {
                 return document.querySelector('div.mainTable > div.mainView');
@@ -628,7 +629,7 @@ app.templating = (function () {
     var updateView = function (viewName) {
         var viewElement = prepareView(viewName, views[viewName].getContext(), views[viewName].eventFunc);
         var domElement = views[viewName].getDomElement();
-        domElement.innerHTML = "";
+        //domElement.innerHTML = "";
         domElement.parentNode.replaceChild(viewElement, domElement);
 
     };
