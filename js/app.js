@@ -513,9 +513,8 @@ app.cart = (function (pubsubService, couponFunc) {
         return getItems();
     }
     function getMostExpensiveItem() {
-        return items.reduce(function (previous, current, index) {
+        return items.reduce(function (previous, current) {
             if (current.price > Number(previous.price)) {
-                //return index;
                 return current;
             }
             return previous;
