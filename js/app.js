@@ -506,18 +506,19 @@ app.cart = (function (pubsubService, couponFunc) {
         var coupon = couponFunc(couponCode),
             total = getTotal();
         if (coupon && coupon.minimumItemsCount && total.amount >= coupon.minimumItemsCount) {
-            var index = getMostExpensiveItemIndex();
-            items[index].price -= items[index].price / items[index].amount;
-            items[index].couponApplied = true;
+            var item = getMostExpensiveItem();
+            item.price -= item.price / item.amount;
+            item.couponApplied = true;
         }
         return getItems();
     }
-    function getMostExpensiveItemIndex() {
+    function getMostExpensiveItem() {
         return items.reduce(function (previous, current, index) {
             if (current.price > Number(previous.price)) {
-                return index;
+                //return index;
+                return current;
             }
-            return index - 1;
+            return previous;
         });
     }
 
