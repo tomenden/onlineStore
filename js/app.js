@@ -494,6 +494,7 @@ app.cart = (function (pubsubService, couponFunc) {
     var setCouponCode = function (code) {
         couponCode = code;
     };
+
     function getCoupenizedPrice(regularPrice, couponCode) {
         var coupon = couponFunc(couponCode);
         if (coupon && coupon.percentDiscount) {
@@ -512,6 +513,7 @@ app.cart = (function (pubsubService, couponFunc) {
         }
         return getItems();
     }
+
     function getMostExpensiveItem() {
         return items.reduce(function (previous, current) {
             if (current.price > Number(previous.price)) {
@@ -545,21 +547,21 @@ app.templating = (function (app) {
             name: 'mainView',
             url: 'partials/mainView.hbs',
             callback: function () {
-                return updateView('mainView')
+                updateView('mainView')
             }
         },
         {
             name: 'pageList',
             url: 'partials/pageList.hbs',
             callback: function () {
-                return updateView('pageList');
+                updateView('pageList');
             }
         },
         {
             name: 'cartView',
             url: 'partials/cartView.hbs',
             callback: function () {
-                return updateView('cartView');
+                updateView('cartView');
             }
         }
     ];
@@ -675,6 +677,7 @@ app.templating = (function (app) {
         }
         return mainViewElement;
     }
+
     function handleChangeAmountEvent(event) {
         event = event || window.event;
         var target = event.target,
@@ -707,6 +710,7 @@ app.templating = (function (app) {
         }
         return pageListElement;
     }
+
     (function itemsPerPageEvent(inputElement) {
         inputElement.onchange = function () {
             if (this.value > 0 && this.value < app.data.getItemsLength()) {
