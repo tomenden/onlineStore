@@ -513,13 +513,12 @@ app.cart = (function (pubsubService, couponFunc) {
         return getItems();
     }
     function getMostExpensiveItemIndex() {
-        var item = items.reduce(function (previous, current) {
+        return items.reduce(function (previous, current, index) {
             if (current.price > Number(previous.price)) {
-                return current;
+                return index;
             }
-            return previous;
+            return index - 1;
         });
-        return itemIndexInCart(item);
     }
 
     var subscriptions = {
