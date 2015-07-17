@@ -39,7 +39,7 @@ app.pubsub = (function () {
 
 /********app data****************************************************************************************************************************/
 
-var data = (function (pubsubService) {
+app.data = (function (pubsubService) {
     /* Items Data */
     var items = [
         {
@@ -369,10 +369,10 @@ var data = (function (pubsubService) {
         sortData: sortData
     };
 })(app.pubsub);
-app.data = data;
+//app.data = data;
 /********main table****************************************************************************************************************************/
 
-mainTable = (function (data, pubsubService) {
+app.mainTable = (function (data, pubsubService) {
     var items = [];
     var generateItems = function (firstItemIndex, stopIndex) {
         var dataLength = app.data.getItemsLength();
@@ -394,11 +394,11 @@ mainTable = (function (data, pubsubService) {
         getItems: getItems
     };
 })(app.data.getItems(), app.pubsub);
-app.mainTable = mainTable;
+//app.mainTable = mainTable;
 
 /********pagination****************************************************************************************************************************/
 
-var pagination = (function (pubsubService, totalNumberOfItems) {
+app.pagination = (function (pubsubService, totalNumberOfItems) {
     var currentPage = 1, itemsPerPage, numberOfPages, stopItemIndex, firstItemIndex;
 
     function updateIndices() {
@@ -436,7 +436,7 @@ var pagination = (function (pubsubService, totalNumberOfItems) {
         setItemsPerPage: setItemsPerPage
     };
 })(app.pubsub, app.data.getItemsLength());
-app.pagination = pagination;
+//app.pagination = pagination;
 //TODO: decide which is better - calling the function pagination immediately (as now), or outside, as below
 //app.pagination = pagination(app.pubsub, app.data.getItemsLength());
 /********cart****************************************************************************************************************************/
