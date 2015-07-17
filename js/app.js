@@ -542,45 +542,52 @@ app.cart = (function (pubsubService, couponFunc) {
 
 
 app.templating = (function (app) {
-    var templateFiles = [
-        {
-            name: 'mainView',
-            url: 'partials/mainView.hbs',
-            callback: function () {
-                updateView('mainView')
+    // Modules
+    var mainTable = app.mainTable,
+        pagination = app.pagination,
+        cart = app.cart;
+
+    var templates = {},
+        templateFiles = [
+            {
+                name: 'mainView',
+                url: 'partials/mainView.hbs',
+                callback: function () {
+                    updateView('mainView')
+                }
+            },
+            {
+                name: 'pageList',
+                url: 'partials/pageList.hbs',
+                callback: function () {
+                    updateView('pageList');
+                }
+            },
+            {
+                name: 'cartView',
+                url: 'partials/cartView.hbs',
+                callback: function () {
+                    updateView('cartView');
+                }
             }
-        },
-        {
-            name: 'pageList',
-            url: 'partials/pageList.hbs',
-            callback: function () {
-                updateView('pageList');
-            }
-        },
-        {
-            name: 'cartView',
-            url: 'partials/cartView.hbs',
-            callback: function () {
-                updateView('cartView');
-            }
-        }
-    ];
-    var templates = {};
-    var loadTemplate = function (templateName, url, callback) {
-        var xhr = new XMLHttpRequest();
-        xhr.open('get', url);
-        xhr.onload = function () {
-            templates[templateName] = Handlebars.compile(this.responseText);
-            callback();
+        ],
+        loadTemplate = function (templateName, url, callback) {//TODO: move AJAX to utils module
+            var xhr = new XMLHttpRequest();
+            xhr.open('get', url);
+            xhr.onload = function () {
+                templates[templateName] = Handlebars.compile(this.responseText);
+                callback();
+            };
+            xhr.send();
         };
-        xhr.send();
-    };
-    var initTemplates = (function () {
+
+
+    (function initTemplates() {
         for (var i = 0; i < templateFiles.length; i++) {
             loadTemplate(templateFiles[i].name, templateFiles[i].url, templateFiles[i].callback);
         }
-    })();
-    var initHelpers = (function () {
+    }());
+    (function initHelpers() {
         Handlebars.registerHelper("currentPageClass", function (page) {
             var currentPage = app.pagination.getCurrentPage();
             if (page === currentPage) {
@@ -602,13 +609,13 @@ app.templating = (function (app) {
 
             return options.inverse(this);
         });
-    })();
+    }());
 
     var views = {
         mainView: {
             getContext: function () {
                 return {
-                    items: app.mainTable.getItems(),
+                    items: mainTable.getItems(),
                     properties: ['id', 'name', 'description', 'image', 'price', 'stock']
                 };
             },
@@ -619,7 +626,7 @@ app.templating = (function (app) {
         },
         pageList: {
             getContext: function () {
-                var numberOfPages = app.pagination.getNumberOfPages(),
+                var numberOfPages = pagination.getNumberOfPages(),
                     pages = [];
                 for (var i = 1; i <= numberOfPages; i++) {
                     pages.push(i);
@@ -635,8 +642,8 @@ app.templating = (function (app) {
         cartView: {
             getContext: function () {
                 return {
-                    items: app.cart.getItems(),
-                    total: app.cart.getTotal()
+                    items: cart.getItems(),
+                    total: cart.getTotal()
                 };
             },
             getDomElement: function () {
@@ -705,7 +712,7 @@ app.templating = (function (app) {
         for (var i = 0; i < pageListElement.children.length; i++) {
             var child = pageListElement.children[i];
             child.onclick = function () {
-                app.pagination.goToPage(Number(this.dataset.number));
+                pagination.goToPage(Number(this.dataset.number));
             };
         }
         return pageListElement;
