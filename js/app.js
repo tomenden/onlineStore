@@ -539,7 +539,7 @@ app.cart = (function (pubsubService, couponFunc) {
 })(app.data);
 
 
-app.templating = (function () {
+app.templating = (function (app) {
     var templateFiles = [
         {
             name: 'mainView',
@@ -655,7 +655,6 @@ app.templating = (function () {
         }
 
         return container;
-
     };
     var updateView = function (viewName) {
         var viewElement = prepareView(viewName, views[viewName].getContext(), views[viewName].eventFunc);
@@ -676,16 +675,6 @@ app.templating = (function () {
         }
         return mainViewElement;
     }
-
-    function prepareCartEvents(cartElement) {
-        var couponCodeBox = cartElement.querySelector('input#coupon-code');
-        var apply = cartElement.querySelector('button.apply');
-        apply.onclick = function () {
-            app.pubsub.publish('Apply Coupon Button clicked', couponCodeBox.value);
-        };
-        return cartElement;
-    }
-
     function handleChangeAmountEvent(event) {
         event = event || window.event;
         var target = event.target,
@@ -700,6 +689,15 @@ app.templating = (function () {
         };
     }
 
+    function prepareCartEvents(cartElement) {
+        var couponCodeBox = cartElement.querySelector('input#coupon-code');
+        var apply = cartElement.querySelector('button.apply');
+        apply.onclick = function () {
+            app.pubsub.publish('Apply Coupon Button clicked', couponCodeBox.value);
+        };
+        return cartElement;
+    }
+
     function preparePageListEvents(pageListElement) {
         for (var i = 0; i < pageListElement.children.length; i++) {
             var child = pageListElement.children[i];
@@ -709,7 +707,6 @@ app.templating = (function () {
         }
         return pageListElement;
     }
-
     (function itemsPerPageEvent(inputElement) {
         inputElement.onchange = function () {
             if (this.value > 0 && this.value < app.data.getItemsLength()) {
@@ -741,6 +738,6 @@ app.templating = (function () {
         ]
     };
 
-})();
+})(app);
 
 
