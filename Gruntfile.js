@@ -25,9 +25,19 @@ module.exports = function (grunt) {
                 ],
                 dest: "dist/built.js"
             }
+        },
+        uglify: {
+            main: {
+                files: {
+                    'dist/built.min.js': ['dist/built.js']
+                }
+            }
         }
     });
 
     grunt.loadNpmTasks('grunt-contrib-handlebars');
-    grunt.loadNpmTasks('grunt-contrib-concat')
+    grunt.loadNpmTasks('grunt-contrib-concat');
+    grunt.loadNpmTasks('grunt-contrib-uglify');
+
+    grunt.registerTask('default', ['handlebars', 'concat:dist', 'uglify']);
 };
