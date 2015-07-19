@@ -4,7 +4,10 @@ module.exports = function(grunt) {
         handlebars: {
             compile: {
                 options: {
-                    namespace: "JST"
+                    namespace: "templates",
+                    processName: function(filePath) {
+                        return filePath.replace(/partials\//, '').replace(/\.hbs$/, '');
+                    }
                 },
                 files: {
                     "partials/templates.js": "partials/*.hbs"

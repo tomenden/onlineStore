@@ -1,6 +1,6 @@
-this["JST"] = this["JST"] || {};
+this["templates"] = this["templates"] || {};
 
-this["JST"]["partials/cartView.hbs"] = Handlebars.template({"1":function(depth0,helpers,partials,data) {
+this["templates"]["cartView"] = Handlebars.template({"1":function(depth0,helpers,partials,data) {
     var stack1, helper, alias1=helpers.helperMissing, alias2="function", alias3=this.escapeExpression;
 
   return "        <div class=\"Row"
@@ -32,7 +32,7 @@ this["JST"]["partials/cartView.hbs"] = Handlebars.template({"1":function(depth0,
     + "</div>\n    </div>\n</div>\n\n\n<div class=\"coupon\">\n    <label for=\"coupon-code\">Coupon Code:</label>\n    <input id=\"coupon-code\">\n    <button class=\"apply\">Apply</button>\n</div>\n";
 },"useData":true});
 
-this["JST"]["partials/mainView.hbs"] = Handlebars.template({"1":function(depth0,helpers,partials,data) {
+this["templates"]["mainView"] = Handlebars.template({"1":function(depth0,helpers,partials,data) {
     var alias1=this.lambda, alias2=this.escapeExpression;
 
   return "        <div class=\"Cell\" data-field=\""
@@ -85,7 +85,7 @@ this["JST"]["partials/mainView.hbs"] = Handlebars.template({"1":function(depth0,
     + ((stack1 = helpers.each.call(depth0,(depth0 != null ? depth0.items : depth0),{"name":"each","hash":{},"fn":this.program(3, data, 0),"inverse":this.noop,"data":data})) != null ? stack1 : "");
 },"useData":true});
 
-this["JST"]["partials/pageList.hbs"] = Handlebars.template({"1":function(depth0,helpers,partials,data) {
+this["templates"]["pageList"] = Handlebars.template({"1":function(depth0,helpers,partials,data) {
     var alias1=this.escapeExpression, alias2=this.lambda;
 
   return "        <li class=\"page-number"

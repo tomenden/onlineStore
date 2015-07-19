@@ -7,13 +7,6 @@ modules.templating = function (app) {
         mainTable = app.mainTable,
         pagination = app.pagination,
         cart = app.cart;
-    //templateFiles = app.templateFiles;
-
-    var templates = {
-        'mainView': JST['partials/mainView.hbs'],
-        'pageList': JST['partials/pageList.hbs'],
-        'cartView': JST['partials/cartView.hbs']
-    };
 
     var views = {
         mainView: {
