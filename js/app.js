@@ -375,7 +375,7 @@ app.data = (function (pubsubService) {
 app.mainTable = (function (data, pubsubService) {
     var items = [];
     var generateItems = function (firstItemIndex, stopIndex) {
-        var dataLength = app.data.getItemsLength();
+        var dataLength = data.length;
         stopIndex = (stopIndex < dataLength) ? stopIndex : dataLength;
         items = data.slice(firstItemIndex, stopIndex);
         pubsubService.publish('itemsGenerated');
