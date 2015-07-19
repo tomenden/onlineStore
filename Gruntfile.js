@@ -7,9 +7,7 @@ module.exports = function(grunt) {
                     namespace: "JST"
                 },
                 files: {
-                    "partials/cartView.js": "partials/cartView.hbs",
-                    "partials/mainView.js": "partials/mainView.hbs",
-                    "partials/pageList.js": "partials/pageList.hbs"
+                    "partials/templates.js": "partials/*.hbs"
                 }
             }
         }
