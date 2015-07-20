@@ -2,7 +2,9 @@
 <html>
 <head lang="en">
     <meta charset="UTF-8">
+    <!-- build:css style.min.css-->
     <link rel="stylesheet" href="css/style.css"/>
+    <!-- /build -->
     <title>Shopping Cart</title>
 </head>
 <body>
@@ -19,6 +21,22 @@
 </div>
 <div class="cart">
 </div>
-<script src="dist/built.min.js"></script>
+<!-- build:js handlebars.js -->
+<script src="js/handlebars-v3.0.3.js"></script>
+<!-- /build -->
+
+<!-- build:js built.min.js -->
+<script src="js/handlebarsHelpers.js"></script>
+<script src="partials/templates.js"></script>
+<script src="js/modulesObject.js"></script>
+<script src="js/modules/UTILS.js"></script>
+<script src="js/modules/pubsub.js"></script>
+<script src="js/modules/data.js"></script>
+<script src="js/modules/mainTable.js"></script>
+<script src="js/modules/pagination.js"></script>
+<script src="js/modules/cart.js"></script>
+<script src="js/modules/templating.js"></script>
+<script src="js/app.js"></script>
+<!-- /build -->
 </body>
 </html>

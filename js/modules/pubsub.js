@@ -3,12 +3,12 @@
  */
 modules.pubsub = function (app) {
     var subscriptions = {}, counter = 0;
-    var subscribe = function (eventType, callback) {
+    function subscribe(eventType, callback) {
         subscriptions[eventType] = subscriptions[eventType] || {};
         subscriptions[eventType][counter] = callback;
         return counter++;
-    };
-    var publish = function (eventType, args) {
+    }
+    function publish(eventType, args) {
         args = Array.prototype.slice.call(arguments, 1);
         var subscribers = subscriptions[eventType];
         for (var id in subscribers) {
@@ -16,16 +16,16 @@ modules.pubsub = function (app) {
                 subscribers[id].apply(this, args);
             }
         }
-    };
-    var unsubscribe = function (eventType, uniqueID) {
+    }
+    function unsubscribe(eventType, uniqueID) {
         if (subscriptions[eventType] && subscriptions[eventType][uniqueID]) {
             delete subscriptions[eventType][uniqueID];
         }
-    };
+    }
 
     app.pubsub = {
         subscribe: subscribe,
         publish: publish,
         unsubscribe: unsubscribe
-    }
+    };
 };

@@ -16,21 +16,23 @@ modules.data = function (data, app) {
                 items[i].price = Math.floor(items[i].price * 0.75).toString();
             }
         }
-    })();
+    }());
     /* Items methods */
-    var getItems = function () {
+    function getItems() {
         return items;
-    };
-    var getItemsLength = function () {
+    }
+
+    function getItemsLength() {
         return items.length;
-    };
-    var getItemById = function (id) {
+    }
+
+    function getItemById(id) {
         for (var i = 0; i < items.length; i += 1) {
             if (items[i].id === id) {
-                return items[i]
+                return items[i];
             }
         }
-    };
+    }
 
     function updateItemStock(item, amount) {
         item.stock -= Number(amount);
@@ -41,8 +43,7 @@ modules.data = function (data, app) {
         items.sort(function (a, b) {
             if (a[field] < b[field]) {
                 return -1;
-            }
-            else if (a[field] > b[field]) {
+            } else if (a[field] > b[field]) {
                 return 1;
             }
             return 0;
@@ -56,14 +57,15 @@ modules.data = function (data, app) {
             return sortDataLowestFirst(field).reverse();
         }
     };
-    var sortData = function (type, field) {
+
+    function sortData(type, field) {
         sortTypes[type](field);
         pubsubService.publish('items sorted');
-    };
+    }
 
     /* Coupon Creation */
     var basicCoupon = {
-        code: "12345"
+        code: '12345'
     };
 
     function createTotalPercentageCoupon(code, percentage) {
@@ -97,7 +99,7 @@ modules.data = function (data, app) {
 
     /* Subscriptions */
     var subscriptions = {
-        'updateStock': pubsubService.subscribe('itemAddedToCart', updateItemStock)
+        updateStock: pubsubService.subscribe('itemAddedToCart', updateItemStock)
     };
 
     app.data = {

@@ -13,24 +13,24 @@ modules.pagination = function (app) {
         stopItemIndex = itemsPerPage * currentPage;
     }
 
-    var goToPage = function (pageNumber) {
-        pageNumber = (pageNumber <= numberOfPages) ? pageNumber : numberOfPages;
+    function goToPage(pageNumber) {
+        pageNumber = pageNumber <= numberOfPages ? pageNumber : numberOfPages;
         currentPage = pageNumber;
         updateIndices();
         pubsubService.publish('pageChanged', firstItemIndex, stopItemIndex);
-    };
-    var getNumberOfPages = function () {
+    }
+    function getNumberOfPages() {
         return numberOfPages;
-    };
-    var getCurrentPage = function () {
+    }
+    function getCurrentPage() {
         return currentPage;
-    };
-    var setItemsPerPage = function (numberOfItemsPerPage) {
+    }
+    function setItemsPerPage(numberOfItemsPerPage) {
         itemsPerPage = numberOfItemsPerPage;
         numberOfPages = Math.ceil(totalNumberOfItems / itemsPerPage);
         updateIndices();
         pubsubService.publish('itemsPerPageChanged', firstItemIndex, stopItemIndex);
-    };
+    }
 
     var subscriptions = {
         onItemsSorted: pubsubService.subscribe('items sorted', goToPage.bind(null, 1))

@@ -51,12 +51,14 @@ modules.templating = function (app) {
     };
 
     function init() {
-        for (view in views) {
-            updateView(view);
+        for (var view in views) {
+            if (views.hasOwnProperty(view)) {
+                updateView(view);
+            }
         }
     }
 
-    var prepareView = function (name, context, eventFunc) {
+    function prepareView(name, context, eventFunc) {
         var html = templates[name](context);
         var domElement = views[name].getDomElement();
         var container = document.createElement(domElement.tagName);
@@ -67,7 +69,7 @@ modules.templating = function (app) {
         }
 
         return container;
-    };
+    }
 
     function updateView(viewName) {
         var viewElement = prepareView(viewName, views[viewName].getContext(), views[viewName].eventFunc);
@@ -113,6 +115,7 @@ modules.templating = function (app) {
         return cartElement;
     }
 
+    /* eslint-disable no-loop-func */
     function preparePageListEvents(pageListElement) {
         for (var i = 0; i < pageListElement.children.length; i++) {
             var child = pageListElement.children[i];
@@ -123,17 +126,19 @@ modules.templating = function (app) {
         return pageListElement;
     }
 
+    /* eslint-enable no-loop-func */
+
     (function itemsPerPageEvent(inputElement) {
         inputElement.onchange = function () {
             if (this.value > 0 && this.value < app.data.getItemsLength()) {
                 app.pagination.setItemsPerPage(Number(this.value));
             }
         };
-    })(document.querySelector('input#items-per-page-input'));
+    }(document.querySelector('input#items-per-page-input')));
 
     var subscriptions = {
         updateMainTable: app.pubsub.subscribe('itemsGenerated', function () {
-            return updateView('mainView')
+            return updateView('mainView');
         }),
         onPageChanged: app.pubsub.subscribe('pageChanged', function () {
             return updateView('pageList');
@@ -156,5 +161,5 @@ modules.templating = function (app) {
 
     app.templating = {
         init: init
-    }
+    };
 };

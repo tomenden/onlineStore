@@ -7,15 +7,17 @@ modules.mainTable = function (app) {
         pubsubService = app.pubsub;
 
     var items = [];
-    var generateItems = function (firstItemIndex, stopIndex) {
+
+    function generateItems(firstItemIndex, stopIndex) {
         var dataLength = data.length;
-        stopIndex = (stopIndex < dataLength) ? stopIndex : dataLength;
+        stopIndex = stopIndex < dataLength ? stopIndex : dataLength;
         items = data.slice(firstItemIndex, stopIndex);
         pubsubService.publish('itemsGenerated');
-    };
-    var getItems = function () {
+    }
+
+    function getItems() {
         return items;
-    };
+    }
 
     var subscriptions = {//TODO: create dictionary of constants > events
         changePage: pubsubService.subscribe('pageChanged', generateItems),

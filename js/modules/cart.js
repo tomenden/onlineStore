@@ -17,7 +17,7 @@ modules.cart = function (app) {
         return -1;
     }
 
-    var addToCart = function (item, amount) {
+    function addToCart(item, amount) {
         amount = parseInt(amount, 10);
         var itemIndex = itemIndexInCart(item);
         if (itemIndex === -1) {
@@ -27,15 +27,14 @@ modules.cart = function (app) {
                 amount: amount,
                 price: parseInt(item.price, 10) * amount
             });
-        }
-        else {
+        } else {
             items[itemIndex].amount += amount;
             items[itemIndex].price += amount * parseInt(item.price, 10);
         }
         pubsubService.publish('itemAddedToCart', item, amount);
-    };
+    }
 
-    var getTotal = function () {
+    function getTotal() {
         var amount = 0, price = 0, oldPrice;
         for (var i = 0; i < items.length; i++) {
             amount += items[i].amount;
@@ -50,25 +49,26 @@ modules.cart = function (app) {
             price: price,
             totalCouponApplied: oldPrice && oldPrice !== price
         };
-    };
-    var getItems = function () {
+    }
+
+    function getItems() {
         return items;
-    };
+    }
 
-    var setCouponCode = function (code) {
+    function setCouponCode(code) {
         couponCode = code;
-    };
+    }
 
-    function getCoupenizedPrice(regularPrice, couponCode) {
-        var coupon = couponFunc(couponCode);
+    function getCoupenizedPrice(regularPrice, code) {
+        var coupon = couponFunc(code);
         if (coupon && coupon.percentDiscount) {
             return regularPrice * (Number(coupon.percentDiscount) / 100);
         }
         return regularPrice;
     }
 
-    function applyItemsCoupon(couponCode) {
-        var coupon = couponFunc(couponCode),
+    function applyItemsCoupon(code) {
+        var coupon = couponFunc(code),
             total = getTotal();
         if (coupon && coupon.minimumItemsCount && total.amount >= coupon.minimumItemsCount) {
             var item = getMostExpensiveItem();
@@ -88,8 +88,8 @@ modules.cart = function (app) {
     }
 
     var subscriptions = {
-        'onApplyCouponClickedSetCoupon': pubsubService.subscribe('Apply Coupon Button clicked', setCouponCode),
-        'onApplyCouponClicked': pubsubService.subscribe('Apply Coupon Button clicked', applyItemsCoupon)
+        onApplyCouponClickedSetCoupon: pubsubService.subscribe('Apply Coupon Button clicked', setCouponCode),
+        onApplyCouponClicked: pubsubService.subscribe('Apply Coupon Button clicked', applyItemsCoupon)
     };
     app.cart = {
         addToCart: addToCart,

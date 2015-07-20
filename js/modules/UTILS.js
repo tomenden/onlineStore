@@ -14,5 +14,5 @@ modules.UTILS = (function () {
 
     return {
         getAJAX: getAJAX
-    }
+    };
 }());
