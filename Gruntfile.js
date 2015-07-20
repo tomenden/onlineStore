@@ -32,12 +32,16 @@ module.exports = function (grunt) {
                     'dist/built.min.js': ['dist/built.js']
                 }
             }
+        },
+        eslint: {
+            src: ['js/**/*.js','!js/handlebars-v3.0.3.js']
         }
     });
 
     grunt.loadNpmTasks('grunt-contrib-handlebars');
     grunt.loadNpmTasks('grunt-contrib-concat');
     grunt.loadNpmTasks('grunt-contrib-uglify');
+    grunt.loadNpmTasks('grunt-contrib-eslint');
 
     grunt.registerTask('default', ['handlebars', 'concat:dist', 'uglify']);
 };
