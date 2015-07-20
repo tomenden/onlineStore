@@ -10,7 +10,12 @@ module.exports = function (grunt) {
         copy: {
             main: {
                 files: [
-                    {expand: true, flatten: true, src: ['index.html', 'css/style.css'], dest: 'build/', filter: 'isFile'}
+                    {expand: true, flatten: true, src: ['index.html', 'css/style.css', 'js/handlebars-v3.0.3.js'], dest: 'build/', filter: 'isFile'}
+                ]
+            },
+            data: {
+                files: [
+                    {src:['data.json'], dest:'dist/'}
                 ]
             }
         },
@@ -28,7 +33,7 @@ module.exports = function (grunt) {
             }
         },
         concat: {
-            dist: {
+            build: {
                 src: [
                     "js/handlebarsHelpers.js",
                     "partials/templates.js",
@@ -42,18 +47,23 @@ module.exports = function (grunt) {
         uglify: {
             main: {
                 files: {
-                    'dist/script.min.js': ['build/built.js']
+                    'dist/script.min.js': ['build/built.js'],
+                    'dist/handlebars.min.js': ['js/handlebars-v3.0.3.js']
                 }
+            }
+        },
+        cssmin: {
+            target: {
+                files: [{src: ['css/style.css'], dest: 'dist/style.min.css'}]
             }
         },
         eslint: {
             src: ['js/**/*.js', '!js/handlebars-v3.0.3.js']
-            //src: ['js/app.js', '!js/handlebars-v3.0.3.js']
         },
         processhtml: {
             dist: {
                 files: {
-                    'dist/index.html': ['index.html']
+                    'dist/index.html': ['build/index.html']
                 }
             }
         }
@@ -66,6 +76,7 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-processhtml');
     grunt.loadNpmTasks('grunt-contrib-copy');
     grunt.loadNpmTasks('grunt-contrib-clean');
+    grunt.loadNpmTasks('grunt-contrib-cssmin');
 
-    grunt.registerTask('default', ['handlebars', 'concat:dist', 'uglify']);
+    grunt.registerTask('default', ['eslint', 'clean', 'handlebars', 'copy', 'concat:build', 'processhtml','uglify', 'cssmin', 'copy:data']);
 };
