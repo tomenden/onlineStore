@@ -10,12 +10,9 @@ modules.pubsub = function (app) {
     }
     function publish(eventType, args) {
         args = Array.prototype.slice.call(arguments, 1);
-        var subscribers = subscriptions[eventType];
-        for (var id in subscribers) {
-            if (subscribers.hasOwnProperty(id)) {
-                subscribers[id].apply(this, args);
-            }
-        }
+        _.forEach(subscriptions[eventType], function (func) {
+            func(args);
+        });
     }
     function unsubscribe(eventType, uniqueID) {
         if (subscriptions[eventType] && subscriptions[eventType][uniqueID]) {
