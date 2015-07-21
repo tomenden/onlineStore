@@ -32,20 +32,18 @@ modules.cart = function (app) {
     }
 
     function getTotal() {
-        var amount = 0, price = 0, oldPrice;
-        for (var i = 0; i < items.length; i++) {
-            amount += items[i].amount;
-            price += items[i].price;
+        var result = _.reduce(items, function (accumulated, item) {
+            accumulated.amount += item.amount;
+            accumulated.price += item.price;
+            return accumulated;
+        }, {amount: 0, price: 0, totalCouponApplied: false});
+
+        if (couponCode && getCoupenizedPrice(result.price, couponCode) !== result.price) {
+            result.price = getCoupenizedPrice(result.price, couponCode);
+            result.totalCouponApplied = true;
         }
-        if (couponCode) {
-            oldPrice = price;
-            price = getCoupenizedPrice(price, couponCode);
-        }
-        return {
-            amount: amount,
-            price: price,
-            totalCouponApplied: oldPrice && oldPrice !== price
-        };
+
+        return result;
     }
 
     function getItems() {
