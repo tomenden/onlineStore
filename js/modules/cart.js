@@ -74,11 +74,8 @@ modules.cart = function (app) {
     }
 
     function getMostExpensiveItem() {
-        return items.reduce(function (previous, current) {
-            if (current.price > Number(previous.price)) {
-                return current;
-            }
-            return previous;
+        return _.max(items, function (item) {
+            return item.price;
         });
     }
 
