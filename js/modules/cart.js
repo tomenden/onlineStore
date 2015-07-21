@@ -9,12 +9,9 @@ modules.cart = function (app) {
     var items = [], couponCode;
 
     function itemIndexInCart(item) {
-        for (var i = 0; i < items.length; i += 1) {
-            if (items[i].id === item.id) {
-                return i;
-            }
-        }
-        return -1;
+        return _.findIndex(items, function(anItem) {
+            return anItem.id === item.id;
+        })
     }
 
     function addToCart(item, amount) {
