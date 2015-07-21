@@ -81,10 +81,7 @@ modules.templating = function (app) {
         heading.addEventListener('click', function (event) {
             app.data.sortData(event.target.className, event.target.parentNode.dataset.field);
         });
-        for (var i = 0; i < rows.length; i++) {
-            var row = rows[i];
-            row.addEventListener('change', handleChangeAmountEvent);
-        }
+        _.invoke(rows, addEventListener, 'change', handleChangeAmountEvent);
         return mainViewElement;
     }
 

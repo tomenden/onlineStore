@@ -11,7 +11,7 @@ modules.pubsub = function (app) {
     function publish(eventType, args) {
         args = Array.prototype.slice.call(arguments, 1);
         _.forEach(subscriptions[eventType], function (func) {
-            func(args);
+            func.apply(null, args);
         });
     }
     function unsubscribe(eventType, uniqueID) {
