@@ -51,11 +51,7 @@ modules.templating = function (app) {
     };
 
     function init() {
-        for (var view in views) {
-            if (views.hasOwnProperty(view)) {
-                updateView(view);
-            }
-        }
+        _.forOwn(Object.keys(views), updateView);
     }
 
     function prepareView(name, context, eventFunc) {
