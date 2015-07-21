@@ -110,12 +110,11 @@ modules.templating = function (app) {
 
     /* eslint-disable no-loop-func */
     function preparePageListEvents(pageListElement) {
-        for (var i = 0; i < pageListElement.children.length; i++) {
-            var child = pageListElement.children[i];
+        _.forEach(pageListElement.children, function (child) {
             child.onclick = function () {
                 pagination.goToPage(Number(this.dataset.number));
             };
-        }
+        });
         return pageListElement;
     }
 
