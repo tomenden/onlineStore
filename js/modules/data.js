@@ -27,11 +27,9 @@ modules.data = function (data, app) {
     }
 
     function getItemById(id) {
-        for (var i = 0; i < items.length; i += 1) {
-            if (items[i].id === id) {
-                return items[i];
-            }
-        }
+        return _.find(items, function (item) {
+            return item.id === id;
+        });
     }
 
     function updateItemStock(item, amount) {
@@ -40,14 +38,7 @@ modules.data = function (data, app) {
 
     /* Sorting */
     function sortDataLowestFirst(field) {
-        items.sort(function (a, b) {
-            if (a[field] < b[field]) {
-                return -1;
-            } else if (a[field] > b[field]) {
-                return 1;
-            }
-            return 0;
-        });
+        items = _.sortBy(items, field);
         return items;
     }
 
@@ -89,12 +80,9 @@ modules.data = function (data, app) {
     ];
     /* Coupon Methods */
     function getMatchingCoupon(code) {
-        for (var i = 0; i < coupons.length; i++) {
-            if (coupons[i].code === code) {
-                return coupons[i];
-            }
-        }
-        console.log('invalid coupon');
+        return _.find(coupons, function (coupon) {
+            return coupon.code === code;
+        });
     }
 
     /* Subscriptions */
