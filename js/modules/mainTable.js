@@ -3,15 +3,16 @@
  */
 modules.mainTable = function (app) {
     // Dependencies
-    var data = app.data.getItems(),
-        pubsubService = app.pubsub;
+    var pubsubService = app.pubsub;
+    var data = app.data;
+
 
     var items = [];
 
     function generateItems(firstItemIndex, stopIndex) {
-        var dataLength = data.length;
+        var dataLength = data.getItemsLength();
         stopIndex = stopIndex < dataLength ? stopIndex : dataLength;
-        items = data.slice(firstItemIndex, stopIndex);
+        items = data.getItems().slice(firstItemIndex, stopIndex);
         pubsubService.publish('itemsGenerated');
     }
 
